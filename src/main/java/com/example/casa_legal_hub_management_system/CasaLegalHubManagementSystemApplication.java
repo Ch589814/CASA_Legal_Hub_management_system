@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class CasaLegalHubManagementSystemApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(CasaLegalHubManagementSystemApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(CasaLegalHubManagementSystemApplication.class, args);
+    }
 
 }

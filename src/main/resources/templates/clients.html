@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Clients - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .form-section-title { font-size: 13px; font-weight: bold; color: #3498db; text-transform: uppercase;
+            letter-spacing: 1px; margin: 18px 0 8px; border-bottom: 1px solid #ecf0f1; padding-bottom: 4px; }
+        .hint { font-size: 11px; color: #95a5a6; margin-top: -10px; margin-bottom: 8px; display: block; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div id="successMsg" class="success-msg" style="display:none;"></div>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+    <div class="card">
+        <h2 id="formTitle">➕ Register New Client</h2>
+        <form id="clientForm">
+
+            <!-- Personal Information -->
+            <div class="form-section-title">👤 Personal Information</div>
+            <div class="two-col">
+                <div>
+                    <label>Full Name *</label>
+                    <input type="text" id="fullName" placeholder="Enter full name">
+                    <span class="field-error" id="err-fullName"></span>
+
+                    <label>National ID Number *</label>
+                    <input type="text" id="idNumber" placeholder="16-digit national ID" maxlength="16" inputmode="numeric">
+                    <span class="hint">Must be exactly 16 digits — <span id="idCount" style="font-weight:bold;color:#e74c3c;">0</span>/16 entered</span>
+                    <span class="field-error" id="err-idNumber"></span>
+
+                    <label>Gender</label>
+                    <select id="gender" style="width:55%;">
+                        <option value="">-- Select --</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                    </select>
+
+                    <label>Nationality</label>
+                    <input type="text" id="nationality" placeholder="e.g. Rwandan">
+                </div>
+                <div>
+                    <label>Phone Number *</label>
+                    <input type="text" id="phone" placeholder="10-digit phone number" maxlength="10" inputmode="numeric">
+                    <span class="hint">Must be exactly 10 digits — <span id="phoneCount" style="font-weight:bold;color:#e74c3c;">0</span>/10 entered</span>
+                    <span class="field-error" id="err-phone"></span>
+
+                    <label>Email (optional)</label>
+                    <input type="text" id="email" placeholder="Enter email or leave blank">
+                    <span class="hint">Leave blank if no email — will be saved as "-"</span>
+                    <span class="field-error" id="err-email"></span>
+
+                    <label>Service Required</label>
+                    <select id="serviceType" style="width:55%;">
+                        <option value="">-- Select Service --</option>
+                        <option>Notary Service</option>
+                        <option>Mediation</option>
+                        <option>Legal Consultation</option>
+                        <option>Legal Representation</option>
+                    </select>
+
+                    <label>Status</label>
+                    <select id="clientStatus" style="width:55%;">
+                        <option>Active</option>
+                        <option>Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="form-section-title">📍 Client Address</div>
+            <div class="two-col">
+                <div>
+                    <label>Province *</label>
+                    <select id="province" style="width:55%;">
+                        <option value="">-- Select Province --</option>
+                        <option>Kigali City</option>
+                        <option>Northern Province</option>
+                        <option>Southern Province</option>
+                        <option>Eastern Province</option>
+                        <option>Western Province</option>
+                    </select>
+                    <span class="field-error" id="err-province"></span>
+
+                    <label>District *</label>
+                    <input type="text" id="district" placeholder="Enter district">
+                    <span class="field-error" id="err-district"></span>
+
+                    <label>Sector *</label>
+                    <input type="text" id="sector" placeholder="Enter sector">
+                    <span class="field-error" id="err-sector"></span>
+                </div>
+                <div>
+                    <label>Cell *</label>
+                    <input type="text" id="cell" placeholder="Enter cell">
+                    <span class="field-error" id="err-cell"></span>
+
+                    <label>Village *</label>
+                    <input type="text" id="village" placeholder="Enter village">
+                    <span class="field-error" id="err-village"></span>
+
+                    <label>Notes</label>
+                    <textarea id="notes" placeholder="Any additional notes..." style="width:55%;"></textarea>
+                </div>
+            </div>
+
+            <br>
+            <button type="submit">💾 Save Client</button>
+            <button type="button" class="btn-cancel" onclick="cancelEdit()">✖ Cancel</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>👥 All Clients</h2>
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by name..." onkeyup="searchClients()">
+        <br><br>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>National ID</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="clientTableBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-actions">
+            <button class="btn-confirm-yes" id="confirmYes">Yes, Delete</button>
+            <button class="btn-confirm-no" id="confirmNo">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/script.js"></script>
+</body>
+</html>

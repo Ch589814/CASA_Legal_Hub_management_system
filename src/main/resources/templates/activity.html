@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Activity Log - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .filter-bar { display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+        .filter-bar select, .filter-bar input { width:auto; padding:8px 12px; margin:0; }
+        .log-action { font-weight:bold; font-size:12px; padding:3px 8px; border-radius:4px; color:white; }
+        .action-ADD_CLIENT, .action-ADD_CASE, .action-ADD_FINANCE, .action-UPLOAD_DOCUMENT { background:#27ae60; }
+        .action-UPDATE_CLIENT, .action-UPDATE_CASE, .action-UPDATE_FINANCE { background:#f39c12; }
+        .action-DELETE_CLIENT, .action-DELETE_CASE, .action-DELETE_FINANCE { background:#e74c3c; }
+        .action-LOGIN { background:#3498db; }
+        .action-LOGOUT { background:#7f8c8d; }
+        .module-badge { font-size:11px; padding:2px 7px; border-radius:4px; background:#ecf0f1; color:#555; }
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+        .stat-mini { background:white; padding:16px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); text-align:center; border-left:4px solid #3498db; }
+        .stat-mini.green { border-left-color:#27ae60; }
+        .stat-mini.red { border-left-color:#e74c3c; }
+        .stat-mini.orange { border-left-color:#f39c12; }
+        .stat-mini-num { font-size:26px; font-weight:bold; color:#2c3e50; }
+        .stat-mini-label { font-size:12px; color:#7f8c8d; margin-top:3px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div class="stats-row">
+        <div class="stat-mini">
+            <div class="stat-mini-num" th:text="${#lists.size(logs)}">0</div>
+            <div class="stat-mini-label">📋 Total Actions</div>
+        </div>
+        <div class="stat-mini green">
+            <div class="stat-mini-num" th:text="${#lists.size(staffList)}">0</div>
+            <div class="stat-mini-label">👤 Active Staff</div>
+        </div>
+        <div class="stat-mini orange">
+            <div class="stat-mini-num"
+                 th:text="${#lists.size(logs.?[action == 'ADD_CLIENT' or action == 'UPDATE_CLIENT'])}">0</div>
+            <div class="stat-mini-label">👥 Client Actions</div>
+        </div>
+        <div class="stat-mini red">
+            <div class="stat-mini-num"
+                 th:text="${#lists.size(logs.?[action == 'ADD_CASE' or action == 'UPDATE_CASE'])}">0</div>
+            <div class="stat-mini-label">📁 Case Actions</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📋 Staff Activity Log</h2>
+
+        <div class="filter-bar">
+            <input type="text" id="searchLog" placeholder="🔍 Search by staff or action..." onkeyup="filterLogs()">
+            <select id="filterModule" onchange="filterLogs()">
+                <option value="">All Modules</option>
+                <option>CLIENTS</option>
+                <option>CASES</option>
+                <option>FINANCE</option>
+                <option>DOCUMENTS</option>
+                <option>AUTH</option>
+            </select>
+            <select id="filterStaff" onchange="filterLogs()">
+                <option value="">All Staff</option>
+                <option th:each="s : ${staffList}" th:value="${s.email}" th:text="${s.fullName}"></option>
+            </select>
+            <button onclick="clearFilters()" class="btn-cancel">✖ Clear</button>
+        </div>
+
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Staff Member</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                    <th>Module</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                    <th>Date &amp; Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="log, s : ${logs}">
+                    <td th:text="${s.count}"></td>
+                    <td><strong th:text="${log.staffName}"></strong></td>
+                    <td th:text="${log.staffEmail}"></td>
+                    <td>
+                        <span th:text="${log.action}"
+                              th:classappend="'log-action action-' + ${log.action}"></span>
+                    </td>
+                    <td><span class="module-badge" th:text="${log.module}"></span></td>
+                    <td th:text="${log.details}"></td>
+                    <td th:text="${log.ipAddress}"></td>
+                    <td th:text="${log.timestamp}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(logs)}">
+                    <td colspan="8" style="text-align:center;color:#999;">No activity recorded yet.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+function filterLogs() {
+    const search = document.getElementById("searchLog").value.toLowerCase();
+    const module = document.getElementById("filterModule").value.toLowerCase();
+    const staff  = document.getElementById("filterStaff").value.toLowerCase();
+    const rows   = document.querySelectorAll("#logTable tbody tr");
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchModule = !module || text.includes(module);
+        const matchStaff  = !staff  || row.cells[2]?.textContent.toLowerCase().includes(staff);
+        row.style.display = (matchSearch && matchModule && matchStaff) ? "" : "none";
+    });
+}
+function clearFilters() {
+    document.getElementById("searchLog").value = "";
+    document.getElementById("filterModule").value = "";
+    document.getElementById("filterStaff").value = "";
+    filterLogs();
+}
+</script>
+</body>
+</html>

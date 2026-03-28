@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Client Details - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div id="successMsg" class="success-msg" style="display:none;"></div>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+    <!-- Client Profile -->
+    <div class="card">
+        <h2>👤 Client Profile</h2>
+        <div class="two-col">
+            <div>
+                <div class="detail-row">
+                    <span class="detail-label">Full Name</span>
+                    <span class="detail-value" th:text="${client.fullName}"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value" th:text="${client.email}"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Phone</span>
+                    <span class="detail-value" th:text="${client.phone}"></span>
+                </div>
+            </div>
+            <div>
+                <div class="detail-row">
+                    <span class="detail-label">Address</span>
+                    <span class="detail-value">
+                        <span th:text="${client.province}"></span>,
+                        <span th:text="${client.district}"></span>,
+                        <span th:text="${client.sector}"></span>,
+                        <span th:text="${client.cell}"></span>,
+                        <span th:text="${client.village}"></span>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date Added</span>
+                    <span class="detail-value" th:text="${client.createdAt}"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Cases</span>
+                    <span class="detail-value" th:text="${#lists.size(cases)}"></span>
+                </div>
+            </div>
+        </div>
+        <a href="/clients" class="back-btn">← Back to Clients</a>
+    </div>
+
+    <!-- Cases Section -->
+    <div class="card">
+        <h2>📁 Cases</h2>
+
+        <form id="caseForm">
+            <input type="hidden" id="caseClientId" th:value="${client.id}">
+            <div class="two-col">
+                <div>
+                    <label>Case Number</label>
+                    <input type="text" id="caseNumber" placeholder="e.g. CASA-2024-001">
+                    <span class="field-error" id="err-caseNumber"></span>
+
+                    <label>Case Type</label>
+                    <select id="caseType">
+                        <option value="">-- Select Type --</option>
+                        <option>Criminal</option>
+                        <option>Civil</option>
+                        <option>Family</option>
+                        <option>Labour</option>
+                        <option>Property</option>
+                        <option>Immigration</option>
+                        <option>Other</option>
+                    </select>
+                    <span class="field-error" id="err-caseType"></span>
+                </div>
+                <div>
+                    <label>Status</label>
+                    <select id="caseStatus">
+                        <option>Open</option>
+                        <option>Pending</option>
+                        <option>Closed</option>
+                    </select>
+
+                    <label>Court Date</label>
+                    <input type="date" id="courtDate">
+
+                    <label>Description</label>
+                    <textarea id="caseDescription" placeholder="Brief case description..."></textarea>
+                </div>
+            </div>
+            <button type="submit">💾 Save Case</button>
+            <button type="button" class="btn-cancel" onclick="cancelCaseEdit()">✖ Cancel</button>
+        </form>
+
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Case #</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Court Date</th>
+                    <th>Description</th>
+                    <th>Date Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="caseTableBody">
+                <tr th:each="c : ${cases}">
+                    <td th:text="${c.caseNumber}"></td>
+                    <td th:text="${c.caseType}"></td>
+                    <td>
+                        <span th:text="${c.status}"
+                              th:classappend="${c.status == 'Open'} ? 'badge badge-open' : (${c.status == 'Closed'} ? 'badge badge-closed' : 'badge badge-pending')"></span>
+                    </td>
+                    <td th:text="${c.courtDate} ?: '-'"></td>
+                    <td th:text="${c.description} ?: '-'"></td>
+                    <td th:text="${c.createdAt}"></td>
+                    <td>
+                        <button class="btn-warning"
+                                th:onclick="|editCase(${c.id}, '${c.caseNumber}', '${c.caseType}', '${c.status}', '${c.courtDate}', '${c.description}')|">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn-delete" th:onclick="|deleteCase(${c.id})|">🗑 Delete</button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(cases)}">
+                    <td colspan="7" style="text-align:center;color:#999;">No cases linked to this client yet.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Finance Section -->
+    <div class="card">
+        <h2>💰 Finance</h2>
+
+        <form id="financeForm">
+            <input type="hidden" id="financeClientId" th:value="${client.id}">
+            <div class="two-col">
+                <div>
+                    <label>Description</label>
+                    <input type="text" id="financeDescription" placeholder="e.g. Consultation fee">
+                    <span class="field-error" id="err-financeDescription"></span>
+
+                    <label>Amount (R)</label>
+                    <input type="number" id="financeAmount" placeholder="0.00" step="0.01">
+                </div>
+                <div>
+                    <label>Type</label>
+                    <select id="financeType">
+                        <option>Payment</option>
+                        <option>Expense</option>
+                    </select>
+
+                    <label>Status</label>
+                    <select id="financeStatus">
+                        <option>Paid</option>
+                        <option>Pending</option>
+                        <option>Overdue</option>
+                    </select>
+
+                    <label>Date</label>
+                    <input type="date" id="financeDate">
+                </div>
+            </div>
+            <button type="submit">💾 Save Record</button>
+            <button type="button" class="btn-cancel" onclick="cancelFinanceEdit()">✖ Cancel</button>
+        </form>
+
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="financeTableBody">
+                <tr th:each="f : ${finances}">
+                    <td th:text="${f.description}"></td>
+                    <td th:text="'R ' + ${f.amount}"></td>
+                    <td th:text="${f.type}"></td>
+                    <td>
+                        <span th:text="${f.status}"
+                              th:classappend="${f.status == 'Paid'} ? 'badge badge-paid' : (${f.status == 'Overdue'} ? 'badge badge-overdue' : 'badge badge-pending')"></span>
+                    </td>
+                    <td th:text="${f.date}"></td>
+                    <td>
+                        <button class="btn-warning"
+                                th:onclick="|editFinance(${f.id}, '${f.description}', ${f.amount}, '${f.type}', '${f.status}', '${f.date}')|">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn-delete" th:onclick="|deleteFinance(${f.id})|">🗑 Delete</button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(finances)}">
+                    <td colspan="6" style="text-align:center;color:#999;">No finance records for this client yet.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Documents Section -->
+    <div class="card">
+        <h2>📄 Documents</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Upload Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="doc : ${documents}">
+                    <td th:text="${doc.fileName}"></td>
+                    <td th:text="${doc.fileType}"></td>
+                    <td th:text="${doc.uploadDate}"></td>
+                    <td><button class="btn-view">📥 Download</button></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(documents)}">
+                    <td colspan="4" style="text-align:center;color:#999;">No documents uploaded for this client yet.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+const CLIENT_ID = /*[[${client.id}]]*/ 0;
+
+// ── Helpers ──────────────────────────────────────────────
+function showSuccess(msg) {
+    const el = document.getElementById("successMsg");
+    el.textContent = "✅ " + msg; el.style.display = "block";
+    document.getElementById("errorMsg").style.display = "none";
+    setTimeout(() => el.style.display = "none", 4000);
+}
+function showError(msg) {
+    const el = document.getElementById("errorMsg");
+    el.textContent = "❌ " + msg; el.style.display = "block";
+}
+
+// ── CASES ─────────────────────────────────────────────────
+let editingCaseId = null;
+
+document.getElementById("caseForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const payload = {
+        caseNumber: document.getElementById("caseNumber").value,
+        caseType: document.getElementById("caseType").value,
+        status: document.getElementById("caseStatus").value,
+        courtDate: document.getElementById("courtDate").value || null,
+        description: document.getElementById("caseDescription").value,
+        client: { id: CLIENT_ID }
+    };
+    const url = editingCaseId ? `/api/cases/${editingCaseId}` : "/api/cases";
+    const method = editingCaseId ? "PUT" : "POST";
+    fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+        .then(r => r.json()).then(() => {
+            showSuccess(editingCaseId ? "Case updated!" : "Case saved!");
+            editingCaseId = null;
+            document.getElementById("caseForm").reset();
+            location.reload();
+        });
+});
+
+function editCase(id, caseNumber, caseType, status, courtDate, description) {
+    editingCaseId = id;
+    document.getElementById("caseNumber").value = caseNumber;
+    document.getElementById("caseType").value = caseType;
+    document.getElementById("caseStatus").value = status;
+    document.getElementById("courtDate").value = courtDate !== 'null' ? courtDate : '';
+    document.getElementById("caseDescription").value = description !== 'null' ? description : '';
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelCaseEdit() {
+    editingCaseId = null;
+    document.getElementById("caseForm").reset();
+}
+
+function deleteCase(id) {
+    if (confirm("Delete this case?")) {
+        fetch(`/api/cases/${id}`, { method: "DELETE" }).then(() => { showSuccess("Case deleted!"); location.reload(); });
+    }
+}
+
+// ── FINANCE ───────────────────────────────────────────────
+let editingFinanceId = null;
+
+document.getElementById("financeForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const payload = {
+        description: document.getElementById("financeDescription").value,
+        amount: document.getElementById("financeAmount").value,
+        type: document.getElementById("financeType").value,
+        status: document.getElementById("financeStatus").value,
+        date: document.getElementById("financeDate").value || null,
+        client: { id: CLIENT_ID }
+    };
+    const url = editingFinanceId ? `/api/finance/${editingFinanceId}` : "/api/finance";
+    const method = editingFinanceId ? "PUT" : "POST";
+    fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+        .then(r => r.json()).then(() => {
+            showSuccess(editingFinanceId ? "Record updated!" : "Record saved!");
+            editingFinanceId = null;
+            document.getElementById("financeForm").reset();
+            location.reload();
+        });
+});
+
+function editFinance(id, description, amount, type, status, date) {
+    editingFinanceId = id;
+    document.getElementById("financeDescription").value = description;
+    document.getElementById("financeAmount").value = amount;
+    document.getElementById("financeType").value = type;
+    document.getElementById("financeStatus").value = status;
+    document.getElementById("financeDate").value = date !== 'null' ? date : '';
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelFinanceEdit() {
+    editingFinanceId = null;
+    document.getElementById("financeForm").reset();
+}
+
+function deleteFinance(id) {
+    if (confirm("Delete this finance record?")) {
+        fetch(`/api/finance/${id}`, { method: "DELETE" }).then(() => { showSuccess("Record deleted!"); location.reload(); });
+    }
+}
+/*]]>*/
+</script>
+</body>
+</html>

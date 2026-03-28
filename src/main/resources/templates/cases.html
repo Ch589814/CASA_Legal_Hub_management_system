@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Cases - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div id="successMsg" class="success-msg" style="display:none;"></div>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+    <div class="card">
+        <h2 id="formTitle">Add New Case</h2>
+        <form id="caseForm">
+            <div class="two-col">
+                <div>
+                    <label>Client</label>
+                    <select id="clientId">
+                        <option value="">-- Select Client --</option>
+                        <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
+                    </select>
+                    <span class="field-error" id="err-client"></span>
+
+                    <label>Case Number</label>
+                    <input type="text" id="caseNumber" placeholder="e.g. CASA-2024-001">
+                    <span class="field-error" id="err-caseNumber"></span>
+
+                    <label>Service Type</label>
+                    <select id="caseServiceType">
+                        <option value="">-- Select Service --</option>
+                        <option>Notary Service</option>
+                        <option>Mediation</option>
+                        <option>Legal Consultation</option>
+                        <option>Legal Representation</option>
+                    </select>
+                    <span class="field-error" id="err-serviceType"></span>
+
+                    <label>Case Type</label>
+                    <select id="caseType">
+                        <option value="">-- Select Type --</option>
+                        <option>Criminal</option>
+                        <option>Civil</option>
+                        <option>Family</option>
+                        <option>Labour</option>
+                        <option>Property</option>
+                        <option>Immigration</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Status</label>
+                    <select id="caseStatus">
+                        <option>Open</option>
+                        <option>In Progress</option>
+                        <option>Pending</option>
+                        <option>Closed</option>
+                        <option>Won</option>
+                        <option>Lost</option>
+                    </select>
+
+                    <label>Priority</label>
+                    <select id="casePriority">
+                        <option>Low</option>
+                        <option selected>Normal</option>
+                        <option>High</option>
+                        <option>Urgent</option>
+                    </select>
+
+                    <label>Court Date</label>
+                    <input type="date" id="courtDate">
+
+                    <label>Description</label>
+                    <textarea id="caseDescription" placeholder="Brief case description..."></textarea>
+                </div>
+            </div>
+            <button type="submit">💾 Save Case</button>
+            <button type="button" class="btn-cancel" onclick="cancelEdit()">✖ Cancel</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>All Cases</h2>
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by case # or type..." onkeyup="searchCases()">
+        <br><br>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Case Number</th>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Court Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="caseTableBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-actions">
+            <button class="btn-confirm-yes" id="confirmYes">Yes, Delete</button>
+            <button class="btn-confirm-no" id="confirmNo">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/cases.js"></script>
+</body>
+</html>

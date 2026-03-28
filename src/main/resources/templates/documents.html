@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Documents - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .tabs { display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid #ecf0f1; }
+        .tab { padding:10px 20px; cursor:pointer; font-size:14px; color:#7f8c8d; border-bottom:3px solid transparent; margin-bottom:-2px; }
+        .tab:hover { color:#3498db; }
+        .tab.active { color:#3498db; border-bottom-color:#3498db; font-weight:bold; }
+        .category-badge { padding:3px 10px; border-radius:12px; font-size:12px; font-weight:bold; color:white; }
+        .cat-client { background:#3498db; }
+        .cat-case { background:#27ae60; }
+        .cat-staff { background:#8e44ad; }
+        .hint { font-size:11px; color:#95a5a6; margin-top:-8px; margin-bottom:10px; display:block; }
+        #clientSection { transition: opacity 0.2s; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div id="successMsg" class="success-msg" style="display:none;"></div>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+    <div class="card">
+        <h2>📄 Upload Document</h2>
+
+        <form id="uploadForm">
+
+            <label>Document Category *</label>
+            <select id="docCategory" style="width:55%;" onchange="handleCategoryChange()">
+                <option value="Client Document">📋 Client Document</option>
+                <option value="Case Document">📁 Case Document</option>
+                <option value="Staff Resource">👤 Staff Resource</option>
+            </select>
+            <span class="hint">Staff Resource = internal documents not linked to any client or case</span>
+
+            <div id="clientSection">
+                <label>Client <span id="clientRequired">*</span></label>
+                <select id="docClientId" style="width:55%;">
+                    <option value="">-- Select Client --</option>
+                    <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
+                </select>
+            </div>
+
+            <label>Select File *</label>
+            <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" style="width:55%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+            <span style="font-size:11px; color:#95a5a6; display:block; margin-bottom:10px;">Allowed: PDF, Word, Excel, Images, Text (max 20MB)</span>
+
+            <label>File Type</label>
+            <select id="docFileType" style="width:55%;">
+                <option>ID Document</option>
+                <option>Court Order</option>
+                <option>Contract</option>
+                <option>Affidavit</option>
+                <option>Invoice</option>
+                <option>Legal Notice</option>
+                <option>Policy Document</option>
+                <option>Template</option>
+                <option>Reference Material</option>
+                <option>Other</option>
+            </select>
+
+            <label>Description (optional)</label>
+            <textarea id="docDescription" placeholder="Brief description of this document..." style="width:55%; height:70px;"></textarea>
+
+            <br>
+            <button type="submit">📤 Save Document</button>
+            <button type="button" class="btn-cancel" onclick="resetForm()">✖ Cancel</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📂 All Documents</h2>
+
+        <div class="tabs">
+            <div class="tab active" onclick="filterTab('all', this)">📂 All</div>
+            <div class="tab" onclick="filterTab('Client Document', this)">📋 Client Documents</div>
+            <div class="tab" onclick="filterTab('Case Document', this)">📁 Case Documents</div>
+            <div class="tab" onclick="filterTab('Staff Resource', this)">👤 Staff Resources</div>
+        </div>
+
+        <input type="text" class="search-input" id="docSearch"
+               placeholder="🔍 Search by file name, type, client or description..."
+               oninput="searchDocuments()" style="width:60%; margin-bottom:14px;">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Category</th>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Client</th>
+                    <th>Description</th>
+                    <th>Upload Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="documentTableBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-actions">
+            <button class="btn-confirm-yes" id="confirmYes">Yes, Delete</button>
+            <button class="btn-confirm-no" id="confirmNo">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/documents.js"></script>
+</body>
+</html>

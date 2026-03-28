@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Finance - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div id="successMsg" class="success-msg" style="display:none;"></div>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+    <div class="card">
+        <h2 id="formTitle">💰 Add Finance Record</h2>
+        <form id="financeForm">
+            <div class="two-col">
+                <div>
+                    <label>Client</label>
+                    <select id="clientId" style="width:55%;">
+                        <option value="">-- Select Client --</option>
+                        <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
+                    </select>
+
+                    <label>Description</label>
+                    <input type="text" id="financeDescription" placeholder="e.g. Legal consultation fee">
+                    <span class="field-error" id="err-description"></span>
+
+                    <label>Amount (RWF)</label>
+                    <input type="number" id="financeAmount" placeholder="0" step="1" min="0">
+
+                    <label>Service Type</label>
+                    <select id="financeServiceType" style="width:55%;">
+                        <option value="">-- Select Service --</option>
+                        <option>Notary Service</option>
+                        <option>Mediation</option>
+                        <option>Legal Consultation</option>
+                        <option>Legal Representation</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Payment Method</label>
+                    <select id="paymentMethod" style="width:55%;">
+                        <option value="">-- Select Method --</option>
+                        <option>Cash</option>
+                        <option>Bank Transfer (EFT)</option>
+                        <option>Mobile Money (MoMo)</option>
+                        <option>Cheque</option>
+                        <option>Card</option>
+                    </select>
+
+                    <label>Type</label>
+                    <select id="financeType" style="width:55%;">
+                        <option>Invoice</option>
+                        <option>Payment</option>
+                        <option>Expense</option>
+                        <option>Refund</option>
+                    </select>
+
+                    <label>Status</label>
+                    <select id="financeStatus" style="width:55%;">
+                        <option value="Pending">Pending</option>
+                        <option value="Overdue">Overdue</option>
+                        <option value="Partial">Partial</option>
+                        <option th:if="${isAdmin}" value="Approved">Approved</option>
+                    </select>
+
+                    <label>Date</label>
+                    <input type="date" id="financeDate" style="width:55%;">
+                </div>
+            </div>
+            <br>
+            <button type="submit">💾 Save Record</button>
+            <button type="button" class="btn-cancel" onclick="cancelEdit()">✖ Cancel</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📊 All Finance Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Description</th>
+                    <th>Service</th>
+                    <th>Amount (RWF)</th>
+                    <th>Payment Method</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="financeTableBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-actions">
+            <button class="btn-confirm-yes" id="confirmYes">Yes, Delete</button>
+            <button class="btn-confirm-no" id="confirmNo">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const IS_ADMIN = /*[[${isAdmin}]]*/ false;
+    /*]]>*/
+</script>
+<script src="/js/finance.js"></script>
+</body>
+</html>

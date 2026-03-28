@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Users - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div id="successMsg" class="success-msg" style="display:none;"></div>
+    <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+    <div class="card">
+        <h2 id="formTitle">Add Staff / Admin User</h2>
+        <form id="userForm">
+            <label>Full Name</label>
+            <input type="text" id="fullName" placeholder="Enter full name">
+            <span class="field-error" id="err-fullName"></span>
+
+            <label>Email</label>
+            <input type="email" id="email" placeholder="Enter email">
+            <span class="field-error" id="err-email"></span>
+
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter password">
+            <span class="field-error" id="err-password"></span>
+
+            <label>Role</label>
+            <select id="role">
+                <option value="STAFF">Staff</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+
+            <label>Status</label>
+            <select id="status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+
+            <br>
+            <button type="submit">💾 Save User</button>
+            <button type="button" class="btn-cancel" onclick="cancelEdit()">✖ Cancel</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>All Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Date Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-actions">
+            <button class="btn-confirm-yes" id="confirmYes">Yes, Delete</button>
+            <button class="btn-confirm-no" id="confirmNo">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/users.js"></script>
+</body>
+</html>

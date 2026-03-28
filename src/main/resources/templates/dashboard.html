@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Dashboard - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .welcome-banner { background: linear-gradient(135deg, #2c3e50, #3498db); color: white; padding: 22px 28px; border-radius: 8px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; }
+        .welcome-banner h1 { margin: 0; font-size: 22px; }
+        .welcome-banner p { margin: 6px 0 0; font-size: 14px; opacity: 0.85; }
+        .role-badge { background: rgba(255,255,255,0.2); padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+        .quick-card { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; text-decoration: none; color: inherit; border-top: 4px solid #3498db; transition: transform 0.15s; }
+        .quick-card:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .quick-card.green { border-top-color: #27ae60; }
+        .quick-card.orange { border-top-color: #f39c12; }
+        .quick-card.purple { border-top-color: #8e44ad; }
+        .quick-card.red { border-top-color: #e74c3c; }
+        .quick-icon { font-size: 30px; margin-bottom: 8px; }
+        .quick-number { font-size: 28px; font-weight: bold; color: #2c3e50; }
+        .quick-label { font-size: 13px; color: #7f8c8d; margin-top: 4px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .section-header h2 { margin: 0; border: none; padding: 0; font-size: 17px; }
+        .section-header a { font-size: 13px; color: #3498db; text-decoration: none; }
+        .section-header a:hover { text-decoration: underline; }
+        .admin-only-banner { background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 10px 16px; border-radius: 6px; margin-bottom: 18px; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div>
+            <h1>👋 Welcome back, <span th:text="${userName}">User</span>!</h1>
+            <p th:if="${isAdmin}">You are logged in as <strong>Administrator</strong>. You have full access to all modules.</p>
+            <p th:unless="${isAdmin}">You are logged in as <strong>Staff</strong>. You can manage clients, cases, documents and finance.</p>
+        </div>
+        <div>
+            <span class="role-badge" th:if="${isAdmin}">🔑 ADMIN</span>
+            <span class="role-badge" th:unless="${isAdmin}">👤 STAFF</span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- ADMIN DASHBOARD                                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div th:if="${isAdmin}">
+
+        <!-- Stats -->
+        <div class="quick-actions">
+            <a href="/clients" class="quick-card">
+                <div class="quick-icon">👥</div>
+                <div class="quick-number" th:text="${totalClients}">0</div>
+                <div class="quick-label">Total Clients</div>
+            </a>
+            <a href="/cases" class="quick-card green">
+                <div class="quick-icon">📁</div>
+                <div class="quick-number" th:text="${totalCases}">0</div>
+                <div class="quick-label">Total Cases</div>
+            </a>
+            <a href="/documents" class="quick-card orange">
+                <div class="quick-icon">📄</div>
+                <div class="quick-number" th:text="${totalDocuments}">0</div>
+                <div class="quick-label">Documents</div>
+            </a>
+            <a href="/users" class="quick-card purple">
+                <div class="quick-icon">👤</div>
+                <div class="quick-number" th:text="${totalUsers}">0</div>
+                <div class="quick-label">Staff Members</div>
+            </a>
+        </div>
+
+        <!-- Recent Clients + Recent Cases -->
+        <div class="two-col">
+            <div class="card">
+                <div class="section-header">
+                    <h2>👥 Recent Clients</h2>
+                    <a href="/clients">View All →</a>
+                </div>
+                <table>
+                    <thead><tr><th>Name</th><th>Phone</th><th>Date</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="c : ${recentClients}">
+                            <td th:text="${c.fullName}"></td>
+                            <td th:text="${c.phone}"></td>
+                            <td th:text="${c.createdAt}"></td>
+                            <td><a th:href="@{/clients/view/{id}(id=${c.id})}"><button class="btn-view" style="padding:5px 10px;font-size:12px;">View</button></a></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentClients)}">
+                            <td colspan="4" style="text-align:center;color:#999;">No clients yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <h2>📁 Recent Cases</h2>
+                    <a href="/cases">View All →</a>
+                </div>
+                <table>
+                    <thead><tr><th>Case #</th><th>Type</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr th:each="c : ${recentCases}">
+                            <td th:text="${c.caseNumber}"></td>
+                            <td th:text="${c.caseType}"></td>
+                            <td>
+                                <span th:text="${c.status}"
+                                      th:classappend="${c.status == 'Open'} ? 'badge badge-open' : (${c.status == 'Closed'} ? 'badge badge-closed' : 'badge badge-pending')"></span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentCases)}">
+                            <td colspan="3" style="text-align:center;color:#999;">No cases yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Staff List -->
+        <div class="card">
+            <div class="section-header">
+                <h2>👤 Staff Members</h2>
+                <a href="/users">Manage Users →</a>
+            </div>
+            <table>
+                <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+                <tbody>
+                    <tr th:each="u, s : ${allUsers}">
+                        <td th:text="${s.count}"></td>
+                        <td th:text="${u.fullName}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td><span th:text="${u.role}" th:classappend="${u.role == 'ADMIN'} ? 'badge badge-admin' : 'badge badge-staff'"></span></td>
+                        <td><span th:text="${u.status}" th:classappend="${u.status == 'Active'} ? 'badge badge-active' : 'badge badge-inactive'"></span></td>
+                        <td th:text="${u.createdAt}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(allUsers)}">
+                        <td colspan="6" style="text-align:center;color:#999;">No users yet</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- STAFF DASHBOARD                                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div th:unless="${isAdmin}">
+
+        <!-- Stats -->
+        <div class="quick-actions">
+            <a href="/clients" class="quick-card">
+                <div class="quick-icon">👥</div>
+                <div class="quick-number" th:text="${totalClients}">0</div>
+                <div class="quick-label">Total Clients</div>
+            </a>
+            <a href="/cases" class="quick-card green">
+                <div class="quick-icon">📁</div>
+                <div class="quick-number" th:text="${totalCases}">0</div>
+                <div class="quick-label">Total Cases</div>
+            </a>
+            <a href="/documents" class="quick-card orange">
+                <div class="quick-icon">📄</div>
+                <div class="quick-number" th:text="${totalDocuments}">0</div>
+                <div class="quick-label">Documents</div>
+            </a>
+            <a href="/finance" class="quick-card red">
+                <div class="quick-icon">💰</div>
+                <div class="quick-number">—</div>
+                <div class="quick-label">Finance Records</div>
+            </a>
+        </div>
+
+        <!-- Quick Actions for Staff -->
+        <div class="card">
+            <h2>⚡ Quick Actions</h2>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <a href="/clients"><button>➕ Add New Client</button></a>
+                <a href="/cases"><button class="btn-view">📁 Add New Case</button></a>
+                <a href="/documents"><button class="btn-warning">📄 Upload Document</button></a>
+                <a href="/finance"><button style="background:#8e44ad;">💰 Add Finance Record</button></a>
+            </div>
+        </div>
+
+        <!-- Recent Clients -->
+        <div class="card">
+            <div class="section-header">
+                <h2>👥 Recent Clients</h2>
+                <a href="/clients">View All →</a>
+            </div>
+            <table>
+                <thead><tr><th>#</th><th>Full Name</th><th>Phone</th><th>Date Added</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr th:each="c, s : ${recentClients}">
+                        <td th:text="${s.count}"></td>
+                        <td th:text="${c.fullName}"></td>
+                        <td th:text="${c.phone}"></td>
+                        <td th:text="${c.createdAt}"></td>
+                        <td><a th:href="@{/clients/view/{id}(id=${c.id})}"><button class="btn-view" style="padding:5px 10px;font-size:12px;">👁 View</button></a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentClients)}">
+                        <td colspan="5" style="text-align:center;color:#999;">No clients yet. <a href="/clients">Add one now</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Cases -->
+        <div class="card">
+            <div class="section-header">
+                <h2>📁 Recent Cases</h2>
+                <a href="/cases">View All →</a>
+            </div>
+            <table>
+                <thead><tr><th>#</th><th>Case Number</th><th>Type</th><th>Status</th><th>Court Date</th></tr></thead>
+                <tbody>
+                    <tr th:each="c, s : ${recentCases}">
+                        <td th:text="${s.count}"></td>
+                        <td th:text="${c.caseNumber}"></td>
+                        <td th:text="${c.caseType}"></td>
+                        <td>
+                            <span th:text="${c.status}"
+                                  th:classappend="${c.status == 'Open'} ? 'badge badge-open' : (${c.status == 'Closed'} ? 'badge badge-closed' : 'badge badge-pending')"></span>
+                        </td>
+                        <td th:text="${c.courtDate} ?: '-'"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentCases)}">
+                        <td colspan="5" style="text-align:center;color:#999;">No cases yet. <a href="/cases">Add one now</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

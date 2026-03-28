@@ -26,19 +26,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/api/**")
             )
-            .authenticationProvider(authenticationProvider())
+            .authenticationProvider(provider)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/users/**", "/api/users/**", "/activity/**", "/api/activity/**", "/admin/**").hasRole("ADMIN")

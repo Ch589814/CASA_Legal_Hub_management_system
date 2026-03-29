@@ -36,7 +36,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authenticationProvider(provider)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password", "/setup/**", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/users/**", "/api/users/**", "/activity/**", "/api/activity/**", "/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

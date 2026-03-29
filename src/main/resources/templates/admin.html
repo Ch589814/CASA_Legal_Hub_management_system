@@ -220,7 +220,32 @@
             <p style="color:#7f8c8d; font-size:13px; margin-bottom:16px;">
                 Activate/deactivate staff accounts, promote to Admin or demote to Staff.
             </p>
-            <table>
+
+            <!-- Pending Accounts -->
+            <h3 style="color:#f39c12;">⏳ Pending Accounts <small style="color:#7f8c8d;">(waiting for your approval)</small></h3>
+            <table style="margin-bottom:24px;">
+                <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Registered</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr th:each="u, s : ${allUsers}" th:if="${u.status == 'Pending'}" class="warning-row">
+                        <td th:text="${s.count}"></td>
+                        <td th:text="${u.fullName}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td th:text="${u.createdAt}"></td>
+                        <td>
+                            <button class="action-btn btn-activate"
+                                    th:onclick="|staffAction(${u.id}, 'activate')|">✅ Approve &amp; Activate</button>
+                            <button class="action-btn btn-deactivate"
+                                    th:onclick="|staffAction(${u.id}, 'reject')|">❌ Reject</button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(allUsers.?[status == 'Pending'])}">
+                        <td colspan="5" style="text-align:center;color:#999;">No pending accounts.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Active Staff -->
+            <h3>✅ Active Staff Members</h3>
                 <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Admin Actions</th></tr></thead>
                 <tbody>
                     <tr th:each="u, s : ${allUsers}">

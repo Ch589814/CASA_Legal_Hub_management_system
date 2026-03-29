@@ -80,6 +80,14 @@ public class UserController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<?> rejectUser(@PathVariable Long id) {
+        return userRepository.findById(id).map(u -> {
+            u.setStatus("Inactive");
+            return ResponseEntity.ok(userRepository.save(u));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}/promote")
     public ResponseEntity<?> promoteUser(@PathVariable Long id) {
         return userRepository.findById(id).map(u -> {

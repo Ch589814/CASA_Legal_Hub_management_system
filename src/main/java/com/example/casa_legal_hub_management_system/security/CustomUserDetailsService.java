@@ -20,6 +20,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No account found for: " + email));
+
+        if ("Inactive".equals(user.getStatus())) {
+            throw new UsernameNotFoundException("Your account has been deactivated. Contact the administrator.");
+        }
         return new UserPrincipal(user);
     }
 }

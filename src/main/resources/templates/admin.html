@@ -92,7 +92,7 @@
 
         <!-- ── FINANCE CONTROL ─────────────────────────────── -->
         <div id="tab-finance" class="panel-section active">
-            <h2 style="color:#e74c3c;">💰 Finance Records — Admin Actions</h2>
+            <h2 style="color:#e74c3c;">💰 Finance Records</h2>
             <p style="color:#7f8c8d; font-size:13px; margin-bottom:16px;">
                 Unlock approved payments, process refunds, or fix overdue records.
                 All changes are logged in the Activity Log.
@@ -177,12 +177,12 @@
 
         <!-- ── CASE CONTROL ────────────────────────────────── -->
         <div id="tab-cases" class="panel-section">
-            <h2 style="color:#e74c3c;">📁 Open Cases — Admin Actions</h2>
+            <h2 style="color:#e74c3c;">📁 Open Cases</h2>
             <p style="color:#7f8c8d; font-size:13px; margin-bottom:16px;">
                 Override case statuses, close cases, or reassign priorities.
             </p>
             <table>
-                <thead><tr><th>#</th><th>Case #</th><th>Client</th><th>Service</th><th>Type</th><th>Priority</th><th>Status</th><th>Court Date</th><th>Admin Actions</th></tr></thead>
+                <thead><tr><th>#</th><th>Case #</th><th>Client</th><th>Service</th><th>Type</th><th>Priority</th><th>Status</th><th>Court Date</th></tr></thead>
                 <tbody>
                     <tr th:each="c, s : ${openCases}">
                         <td th:text="${s.count}"></td>
@@ -198,17 +198,9 @@
                             <span th:text="${c.status}" class="badge badge-open"></span>
                         </td>
                         <td th:text="${c.courtDate ?: '-'}"></td>
-                        <td>
-                            <button class="action-btn btn-fix"
-                                    th:onclick="|caseAction(${c.id}, 'close')|">✅ Close</button>
-                            <button class="action-btn btn-unlock"
-                                    th:onclick="|caseAction(${c.id}, 'pending')|">⏳ Set Pending</button>
-                            <button class="action-btn btn-deactivate"
-                                    th:onclick="|caseAction(${c.id}, 'won')|">🏆 Won</button>
-                        </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(openCases)}">
-                        <td colspan="9" style="text-align:center;color:#999;">No open cases.</td>
+                        <td colspan="8" style="text-align:center;color:#999;">No open cases.</td>
                     </tr>
                 </tbody>
             </table>
@@ -216,7 +208,7 @@
 
         <!-- ── STAFF CONTROL ──────────────────────────────── -->
         <div id="tab-staff" class="panel-section">
-            <h2 style="color:#e74c3c;">👤 Staff Management — Admin Actions</h2>
+            <h2 style="color:#e74c3c;">👤 Staff Management</h2>
             <p style="color:#7f8c8d; font-size:13px; margin-bottom:16px;">
                 Activate/deactivate staff accounts, promote to Admin or demote to Staff.
             </p>

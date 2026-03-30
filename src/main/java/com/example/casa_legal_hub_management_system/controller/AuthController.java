@@ -38,7 +38,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String registerSubmit(@ModelAttribute User user, RedirectAttributes redirectAttributes) {
+    public String registerSubmit(@ModelAttribute User user,
+                                  @RequestParam String confirmPassword,
+                                  RedirectAttributes redirectAttributes) {
+        if (!user.getPassword().equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("error", "Passwords do not match.");
+            return "redirect:/register";
+        }
+        if (user.getPassword().length() < 6) {
+            redirectAttributes.addFlashAttribute("error", "Password must be at least 6 characters.");
+            return "redirect:/register";
+        }
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             redirectAttributes.addFlashAttribute("error", "An account with this email already exists.");
             return "redirect:/register";

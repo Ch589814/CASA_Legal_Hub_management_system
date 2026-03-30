@@ -46,6 +46,11 @@ public class ClientController {
                     .collect(Collectors.toList());
             return ResponseEntity.badRequest().body(Map.of("errors", errors));
         }
+        if (client.getIdNumber() != null && !client.getIdNumber().isBlank()
+                && clientRepository.existsByIdNumber(client.getIdNumber())) {
+            return ResponseEntity.badRequest().body(Map.of("errors",
+                    List.of("A client with this National ID already exists. Please open a new case for the existing client.")));
+        }
         Client saved = clientRepository.save(client);
         activityLogService.log("ADD_CLIENT", "CLIENTS", "Added client: " + saved.getFullName(), request);
         return ResponseEntity.ok(saved);
@@ -59,6 +64,13 @@ public class ClientController {
                     .map(e -> e.getField() + ": " + e.getDefaultMessage())
                     .collect(Collectors.toList());
             return ResponseEntity.badRequest().body(Map.of("errors", errors));
+        }
+        if (client.getIdNumber() != null && !client.getIdNumber().isBlank()) {
+            clientRepository.findByIdNumber(client.getIdNumber()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new IllegalArgumentException("Another client already has this National ID.");
+                }
+            });
         }
         client.setId(id);
         Client saved = clientRepository.save(client);

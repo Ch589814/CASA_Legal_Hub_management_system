@@ -213,8 +213,7 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
         gender:      document.getElementById("gender").value,
         nationality: document.getElementById("nationality").value.trim(),
         serviceType: document.getElementById("serviceType").value,
-        status:      document.getElementById("clientStatus").value,
-        notes:       document.getElementById("notes").value.trim()
+        status:      document.getElementById("clientStatus").value
     };
 
     const url    = editingId ? `/api/clients/${editingId}` : "/api/clients";
@@ -262,7 +261,6 @@ function editClient(c) {
     document.getElementById("nationality").value  = c.nationality || "";
     document.getElementById("serviceType").value  = c.serviceType || "";
     document.getElementById("clientStatus").value = c.status      || "Active";
-    document.getElementById("notes").value        = c.notes       || "";
     document.getElementById("formTitle").textContent = "✏️ Edit Client";
     editingId = c.id;
     window.scrollTo({ top: 0, behavior: "smooth" });

@@ -1,5 +1,6 @@
 package com.example.casa_legal_hub_management_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -19,19 +20,13 @@ public class Case {
     @NotBlank(message = "Case number is required")
     private String caseNumber;
 
-    // Notary / Mediation / Legal Consultation / Legal Representation
     @NotBlank(message = "Service type is required")
     private String serviceType;
 
-    // Criminal / Civil / Family / Labour / Property / Immigration / Other
     private String caseType;
-
-    private String status = "Open"; // Open / In Progress / Pending / Closed / Won / Lost
-
-    private String priority = "Normal"; // Low / Normal / High / Urgent
-
+    private String status = "Open";
+    private String priority = "Normal";
     private LocalDate courtDate;
-
     private LocalDate closedDate;
 
     @Column(length = 2000)
@@ -40,15 +35,16 @@ public class Case {
     @Column(length = 2000)
     private String notes;
 
-    private String outcome; // Won / Lost / Settled / Withdrawn
-
+    private String outcome;
     private LocalDate createdAt = LocalDate.now();
 
     @ManyToOne
     @JoinColumn(name = "client_id")
+    @JsonIgnoreProperties({"cases", "finances", "documents"})
     private Client client;
 
     @ManyToOne
     @JoinColumn(name = "assigned_staff_id")
+    @JsonIgnoreProperties({"password", "resetToken"})
     private User assignedStaff;
 }

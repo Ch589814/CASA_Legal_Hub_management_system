@@ -1,5 +1,6 @@
 package com.example.casa_legal_hub_management_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -18,8 +19,6 @@ public class Document {
     private String fileName;
     private String fileType;
     private String filePath;
-
-    // Client Document / Case Document / Staff Resource
     private String category = "Client Document";
 
     @Column(length = 500)
@@ -29,9 +28,11 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "client_id")
+    @JsonIgnoreProperties({"cases", "finances", "documents"})
     private Client client;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
+    @JsonIgnoreProperties({"client", "assignedStaff", "finances", "documents"})
     private Case linkedCase;
 }

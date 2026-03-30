@@ -78,11 +78,13 @@ public class WebController {
 
     @GetMapping("/clients/view/{id}")
     public String viewClient(@PathVariable Long id, Model model) {
-        model.addAttribute("client", clientRepository.findById(id).orElseThrow());
-        model.addAttribute("cases", caseRepository.findByClientId(id));
-        model.addAttribute("finances", financeRepository.findByClientId(id));
-        model.addAttribute("documents", documentRepository.findByClientId(id));
-        return "client-details";
+        return clientRepository.findById(id).map(client -> {
+            model.addAttribute("client", client);
+            model.addAttribute("cases", caseRepository.findByClientId(id));
+            model.addAttribute("finances", financeRepository.findByClientId(id));
+            model.addAttribute("documents", documentRepository.findByClientId(id));
+            return "client-details";
+        }).orElse("redirect:/clients");
     }
 
     @GetMapping("/cases")

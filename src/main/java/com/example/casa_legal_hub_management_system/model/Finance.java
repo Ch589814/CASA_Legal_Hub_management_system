@@ -1,5 +1,6 @@
 package com.example.casa_legal_hub_management_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -22,21 +23,13 @@ public class Finance {
     @NotBlank(message = "Description is required")
     private String description;
 
-    // Notary / Mediation / Legal Consultation / Legal Representation
     private String serviceType;
-
     private BigDecimal amount = BigDecimal.ZERO;
-
     private BigDecimal amountPaid = BigDecimal.ZERO;
-
-    private String type; // Invoice / Payment / Expense / Refund
-
-    private String status; // Paid / Pending / Overdue / Partial
-
-    private String paymentMethod; // Cash / EFT / Card
-
+    private String type;
+    private String status;
+    private String paymentMethod;
     private LocalDate date = LocalDate.now();
-
     private LocalDate dueDate;
 
     @Column(length = 500)
@@ -44,9 +37,11 @@ public class Finance {
 
     @ManyToOne
     @JoinColumn(name = "client_id")
+    @JsonIgnoreProperties({"cases", "finances", "documents"})
     private Client client;
 
     @ManyToOne
     @JoinColumn(name = "case_id")
+    @JsonIgnoreProperties({"client", "assignedStaff", "finances", "documents"})
     private Case linkedCase;
 }

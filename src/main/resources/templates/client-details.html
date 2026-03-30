@@ -14,7 +14,7 @@
 
     <!-- Client Profile -->
     <div class="card">
-        <h2>👤 Client Profile</h2>
+        <h2>&#128100; Client Profile</h2>
         <div class="two-col">
             <div>
                 <div class="detail-row">
@@ -22,27 +22,58 @@
                     <span class="detail-value" th:text="${client.fullName}"></span>
                 </div>
                 <div class="detail-row">
+                    <span class="detail-label">National ID</span>
+                    <span class="detail-value" th:text="${client.idNumber} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
                     <span class="detail-label">Email</span>
-                    <span class="detail-value" th:text="${client.email}"></span>
+                    <span class="detail-value" th:text="${client.email} ?: '-'"></span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Phone</span>
                     <span class="detail-value" th:text="${client.phone}"></span>
                 </div>
+                <div class="detail-row">
+                    <span class="detail-label">Gender</span>
+                    <span class="detail-value" th:text="${client.gender} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Nationality</span>
+                    <span class="detail-value" th:text="${client.nationality} ?: '-'"></span>
+                </div>
             </div>
             <div>
                 <div class="detail-row">
-                    <span class="detail-label">Address</span>
-                    <span class="detail-value">
-                        <span th:text="${client.province}"></span>,
-                        <span th:text="${client.district}"></span>,
-                        <span th:text="${client.sector}"></span>,
-                        <span th:text="${client.cell}"></span>,
-                        <span th:text="${client.village}"></span>
-                    </span>
+                    <span class="detail-label">Province</span>
+                    <span class="detail-value" th:text="${client.province} ?: '-'"></span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Date Added</span>
+                    <span class="detail-label">District</span>
+                    <span class="detail-value" th:text="${client.district} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Sector</span>
+                    <span class="detail-value" th:text="${client.sector} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cell</span>
+                    <span class="detail-value" th:text="${client.cell} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Village</span>
+                    <span class="detail-value" th:text="${client.village} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Service Type</span>
+                    <span class="detail-value" th:text="${client.serviceType} ?: '-'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status</span>
+                    <span th:text="${client.status}"
+                          th:classappend="${client.status == 'Active'} ? 'badge badge-active' : 'badge badge-inactive'"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date Registered</span>
                     <span class="detail-value" th:text="${client.createdAt}"></span>
                 </div>
                 <div class="detail-row">
@@ -51,13 +82,12 @@
                 </div>
             </div>
         </div>
-        <a href="/clients" class="back-btn">← Back to Clients</a>
+        <a href="/clients" class="back-btn">&#8592; Back to Clients</a>
     </div>
 
     <!-- Cases Section -->
     <div class="card">
-        <h2>📁 Cases</h2>
-
+        <h2>&#128193; Cases</h2>
         <form id="caseForm">
             <input type="hidden" id="caseClientId" th:value="${client.id}">
             <div class="two-col">
@@ -65,6 +95,15 @@
                     <label>Case Number</label>
                     <input type="text" id="caseNumber" placeholder="e.g. CASA-2024-001">
                     <span class="field-error" id="err-caseNumber"></span>
+
+                    <label>Service Type</label>
+                    <select id="caseServiceType">
+                        <option value="">-- Select Service --</option>
+                        <option>Notary Service</option>
+                        <option>Mediation</option>
+                        <option>Legal Consultation</option>
+                        <option>Legal Representation</option>
+                    </select>
 
                     <label>Case Type</label>
                     <select id="caseType">
@@ -77,14 +116,22 @@
                         <option>Immigration</option>
                         <option>Other</option>
                     </select>
-                    <span class="field-error" id="err-caseType"></span>
                 </div>
                 <div>
                     <label>Status</label>
                     <select id="caseStatus">
                         <option>Open</option>
+                        <option>In Progress</option>
                         <option>Pending</option>
                         <option>Closed</option>
+                    </select>
+
+                    <label>Priority</label>
+                    <select id="casePriority">
+                        <option>Normal</option>
+                        <option>Low</option>
+                        <option>High</option>
+                        <option>Urgent</option>
                     </select>
 
                     <label>Court Date</label>
@@ -94,8 +141,8 @@
                     <textarea id="caseDescription" placeholder="Brief case description..."></textarea>
                 </div>
             </div>
-            <button type="submit">💾 Save Case</button>
-            <button type="button" class="btn-cancel" onclick="cancelCaseEdit()">✖ Cancel</button>
+            <button type="submit">&#128190; Save Case</button>
+            <button type="button" class="btn-cancel" onclick="cancelCaseEdit()">&#10006; Cancel</button>
         </form>
 
         <br>
@@ -103,7 +150,9 @@
             <thead>
                 <tr>
                     <th>Case #</th>
+                    <th>Service</th>
                     <th>Type</th>
+                    <th>Priority</th>
                     <th>Status</th>
                     <th>Court Date</th>
                     <th>Description</th>
@@ -111,10 +160,12 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="caseTableBody">
+            <tbody>
                 <tr th:each="c : ${cases}">
                     <td th:text="${c.caseNumber}"></td>
-                    <td th:text="${c.caseType}"></td>
+                    <td th:text="${c.serviceType} ?: '-'"></td>
+                    <td th:text="${c.caseType} ?: '-'"></td>
+                    <td th:text="${c.priority} ?: '-'"></td>
                     <td>
                         <span th:text="${c.status}"
                               th:classappend="${c.status == 'Open'} ? 'badge badge-open' : (${c.status == 'Closed'} ? 'badge badge-closed' : 'badge badge-pending')"></span>
@@ -123,15 +174,20 @@
                     <td th:text="${c.description} ?: '-'"></td>
                     <td th:text="${c.createdAt}"></td>
                     <td>
-                        <button class="btn-warning"
-                                th:onclick="|editCase(${c.id}, '${c.caseNumber}', '${c.caseType}', '${c.status}', '${c.courtDate}', '${c.description}')|">
-                            ✏️ Edit
-                        </button>
-                        <button class="btn-delete" th:onclick="|deleteCase(${c.id})|">🗑 Delete</button>
+                        <button class="btn-warning btn-edit-case"
+                                th:data-id="${c.id}"
+                                th:data-number="${c.caseNumber}"
+                                th:data-service="${c.serviceType} ?: ''"
+                                th:data-type="${c.caseType} ?: ''"
+                                th:data-status="${c.status}"
+                                th:data-priority="${c.priority} ?: 'Normal'"
+                                th:data-court="${c.courtDate} ?: ''"
+                                th:data-desc="${c.description} ?: ''">Edit</button>
+                        <button class="btn-delete btn-del-case" th:data-id="${c.id}">Delete</button>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(cases)}">
-                    <td colspan="7" style="text-align:center;color:#999;">No cases linked to this client yet.</td>
+                    <td colspan="9" style="text-align:center;color:#999;">No cases linked to this client yet.</td>
                 </tr>
             </tbody>
         </table>
@@ -139,8 +195,7 @@
 
     <!-- Finance Section -->
     <div class="card">
-        <h2>💰 Finance</h2>
-
+        <h2>&#128176; Finance</h2>
         <form id="financeForm">
             <input type="hidden" id="financeClientId" th:value="${client.id}">
             <div class="two-col">
@@ -149,20 +204,25 @@
                     <input type="text" id="financeDescription" placeholder="e.g. Consultation fee">
                     <span class="field-error" id="err-financeDescription"></span>
 
-                    <label>Amount (R)</label>
-                    <input type="number" id="financeAmount" placeholder="0.00" step="0.01">
+                    <label>Amount (RWF)</label>
+                    <input type="number" id="financeAmount" placeholder="0" step="1" min="0">
+
+                    <label>Amount Paid (RWF)</label>
+                    <input type="number" id="financeAmountPaid" placeholder="0" step="1" min="0">
                 </div>
                 <div>
                     <label>Type</label>
                     <select id="financeType">
+                        <option>Invoice</option>
                         <option>Payment</option>
                         <option>Expense</option>
+                        <option>Refund</option>
                     </select>
 
                     <label>Status</label>
                     <select id="financeStatus">
-                        <option>Paid</option>
                         <option>Pending</option>
+                        <option>Partial</option>
                         <option>Overdue</option>
                     </select>
 
@@ -170,8 +230,8 @@
                     <input type="date" id="financeDate">
                 </div>
             </div>
-            <button type="submit">💾 Save Record</button>
-            <button type="button" class="btn-cancel" onclick="cancelFinanceEdit()">✖ Cancel</button>
+            <button type="submit">&#128190; Save Record</button>
+            <button type="button" class="btn-cancel" onclick="cancelFinanceEdit()">&#10006; Cancel</button>
         </form>
 
         <br>
@@ -179,33 +239,41 @@
             <thead>
                 <tr>
                     <th>Description</th>
-                    <th>Amount</th>
+                    <th>Amount (RWF)</th>
+                    <th>Amount Paid</th>
+                    <th>Balance</th>
                     <th>Type</th>
                     <th>Status</th>
                     <th>Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="financeTableBody">
+            <tbody>
                 <tr th:each="f : ${finances}">
                     <td th:text="${f.description}"></td>
-                    <td th:text="'R ' + ${f.amount}"></td>
+                    <td th:text="${f.amount}"></td>
+                    <td th:text="${f.amountPaid} ?: '0'"></td>
+                    <td th:text="${f.amount - (f.amountPaid ?: 0)}"></td>
                     <td th:text="${f.type}"></td>
                     <td>
                         <span th:text="${f.status}"
-                              th:classappend="${f.status == 'Paid'} ? 'badge badge-paid' : (${f.status == 'Overdue'} ? 'badge badge-overdue' : 'badge badge-pending')"></span>
+                              th:classappend="${f.status == 'Approved'} ? 'badge badge-paid' : (${f.status == 'Overdue'} ? 'badge badge-overdue' : 'badge badge-pending')"></span>
                     </td>
                     <td th:text="${f.date}"></td>
                     <td>
-                        <button class="btn-warning"
-                                th:onclick="|editFinance(${f.id}, '${f.description}', ${f.amount}, '${f.type}', '${f.status}', '${f.date}')|">
-                            ✏️ Edit
-                        </button>
-                        <button class="btn-delete" th:onclick="|deleteFinance(${f.id})|">🗑 Delete</button>
+                        <button class="btn-warning btn-edit-finance"
+                                th:data-id="${f.id}"
+                                th:data-desc="${f.description}"
+                                th:data-amount="${f.amount}"
+                                th:data-paid="${f.amountPaid} ?: 0"
+                                th:data-type="${f.type}"
+                                th:data-status="${f.status}"
+                                th:data-date="${f.date} ?: ''">Edit</button>
+                        <button class="btn-delete btn-del-finance" th:data-id="${f.id}">Delete</button>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(finances)}">
-                    <td colspan="6" style="text-align:center;color:#999;">No finance records for this client yet.</td>
+                    <td colspan="8" style="text-align:center;color:#999;">No finance records for this client yet.</td>
                 </tr>
             </tbody>
         </table>
@@ -213,7 +281,7 @@
 
     <!-- Documents Section -->
     <div class="card">
-        <h2>📄 Documents</h2>
+        <h2>&#128196; Documents</h2>
         <table>
             <thead>
                 <tr>
@@ -228,7 +296,11 @@
                     <td th:text="${doc.fileName}"></td>
                     <td th:text="${doc.fileType}"></td>
                     <td th:text="${doc.uploadDate}"></td>
-                    <td><button class="btn-view">📥 Download</button></td>
+                    <td>
+                        <a th:href="@{/api/documents/download/{id}(id=${doc.id})}">
+                            <button class="btn-view">Download</button>
+                        </a>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(documents)}">
                     <td colspan="4" style="text-align:center;color:#999;">No documents uploaded for this client yet.</td>
@@ -243,61 +315,101 @@
 /*<![CDATA[*/
 const CLIENT_ID = /*[[${client.id}]]*/ 0;
 
-// ── Helpers ──────────────────────────────────────────────
 function showSuccess(msg) {
     const el = document.getElementById("successMsg");
-    el.textContent = "✅ " + msg; el.style.display = "block";
+    el.textContent = "OK " + msg; el.style.display = "block";
     document.getElementById("errorMsg").style.display = "none";
     setTimeout(() => el.style.display = "none", 4000);
 }
 function showError(msg) {
     const el = document.getElementById("errorMsg");
-    el.textContent = "❌ " + msg; el.style.display = "block";
+    el.textContent = "Error: " + msg; el.style.display = "block";
 }
 
 // ── CASES ─────────────────────────────────────────────────
 let editingCaseId = null;
 
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".btn-edit-case").forEach(btn => {
+        btn.addEventListener("click", function() {
+            editingCaseId = this.dataset.id;
+            document.getElementById("caseNumber").value      = this.dataset.number  || "";
+            document.getElementById("caseServiceType").value = this.dataset.service || "";
+            document.getElementById("caseType").value        = this.dataset.type    || "";
+            document.getElementById("caseStatus").value      = this.dataset.status  || "Open";
+            document.getElementById("casePriority").value    = this.dataset.priority || "Normal";
+            document.getElementById("courtDate").value       = this.dataset.court   || "";
+            document.getElementById("caseDescription").value = this.dataset.desc    || "";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    });
+
+    document.querySelectorAll(".btn-del-case").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            if (confirm("Delete this case?")) {
+                fetch(`/api/cases/${id}`, { method: "DELETE" })
+                    .then(() => { showSuccess("Case deleted!"); setTimeout(() => location.reload(), 1000); });
+            }
+        });
+    });
+
+    document.querySelectorAll(".btn-edit-finance").forEach(btn => {
+        btn.addEventListener("click", function() {
+            editingFinanceId = this.dataset.id;
+            document.getElementById("financeDescription").value  = this.dataset.desc   || "";
+            document.getElementById("financeAmount").value       = this.dataset.amount || "";
+            document.getElementById("financeAmountPaid").value   = this.dataset.paid   || "";
+            document.getElementById("financeType").value         = this.dataset.type   || "";
+            document.getElementById("financeStatus").value       = this.dataset.status || "Pending";
+            document.getElementById("financeDate").value         = this.dataset.date   || "";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    });
+
+    document.querySelectorAll(".btn-del-finance").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            if (confirm("Delete this finance record?")) {
+                fetch(`/api/finance/${id}`, { method: "DELETE" })
+                    .then(() => { showSuccess("Record deleted!"); setTimeout(() => location.reload(), 1000); });
+            }
+        });
+    });
+});
+
 document.getElementById("caseForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    const caseNumber = document.getElementById("caseNumber").value.trim();
+    if (!caseNumber) { showError("Case number is required."); return; }
+    const serviceType = document.getElementById("caseServiceType").value;
+    if (!serviceType) { showError("Service type is required."); return; }
     const payload = {
-        caseNumber: document.getElementById("caseNumber").value,
-        caseType: document.getElementById("caseType").value,
-        status: document.getElementById("caseStatus").value,
-        courtDate: document.getElementById("courtDate").value || null,
-        description: document.getElementById("caseDescription").value,
+        caseNumber:  caseNumber,
+        serviceType: serviceType,
+        caseType:    document.getElementById("caseType").value || null,
+        status:      document.getElementById("caseStatus").value,
+        priority:    document.getElementById("casePriority").value,
+        courtDate:   document.getElementById("courtDate").value || null,
+        description: document.getElementById("caseDescription").value || null,
         client: { id: CLIENT_ID }
     };
-    const url = editingCaseId ? `/api/cases/${editingCaseId}` : "/api/cases";
+    const url    = editingCaseId ? `/api/cases/${editingCaseId}` : "/api/cases";
     const method = editingCaseId ? "PUT" : "POST";
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        .then(r => r.json()).then(() => {
+        .then(r => r.json())
+        .then(() => {
             showSuccess(editingCaseId ? "Case updated!" : "Case saved!");
             editingCaseId = null;
             document.getElementById("caseForm").reset();
-            location.reload();
-        });
+            setTimeout(() => location.reload(), 1000);
+        })
+        .catch(() => showError("Failed to save case."));
 });
-
-function editCase(id, caseNumber, caseType, status, courtDate, description) {
-    editingCaseId = id;
-    document.getElementById("caseNumber").value = caseNumber;
-    document.getElementById("caseType").value = caseType;
-    document.getElementById("caseStatus").value = status;
-    document.getElementById("courtDate").value = courtDate !== 'null' ? courtDate : '';
-    document.getElementById("caseDescription").value = description !== 'null' ? description : '';
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
 
 function cancelCaseEdit() {
     editingCaseId = null;
     document.getElementById("caseForm").reset();
-}
-
-function deleteCase(id) {
-    if (confirm("Delete this case?")) {
-        fetch(`/api/cases/${id}`, { method: "DELETE" }).then(() => { showSuccess("Case deleted!"); location.reload(); });
-    }
 }
 
 // ── FINANCE ───────────────────────────────────────────────
@@ -305,44 +417,33 @@ let editingFinanceId = null;
 
 document.getElementById("financeForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    const description = document.getElementById("financeDescription").value.trim();
+    if (!description) { showError("Description is required."); return; }
     const payload = {
-        description: document.getElementById("financeDescription").value,
-        amount: document.getElementById("financeAmount").value,
-        type: document.getElementById("financeType").value,
-        status: document.getElementById("financeStatus").value,
-        date: document.getElementById("financeDate").value || null,
+        description: description,
+        amount:      document.getElementById("financeAmount").value || 0,
+        amountPaid:  document.getElementById("financeAmountPaid").value || 0,
+        type:        document.getElementById("financeType").value,
+        status:      document.getElementById("financeStatus").value,
+        date:        document.getElementById("financeDate").value || null,
         client: { id: CLIENT_ID }
     };
-    const url = editingFinanceId ? `/api/finance/${editingFinanceId}` : "/api/finance";
+    const url    = editingFinanceId ? `/api/finance/${editingFinanceId}` : "/api/finance";
     const method = editingFinanceId ? "PUT" : "POST";
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        .then(r => r.json()).then(() => {
+        .then(r => r.json())
+        .then(() => {
             showSuccess(editingFinanceId ? "Record updated!" : "Record saved!");
             editingFinanceId = null;
             document.getElementById("financeForm").reset();
-            location.reload();
-        });
+            setTimeout(() => location.reload(), 1000);
+        })
+        .catch(() => showError("Failed to save record."));
 });
-
-function editFinance(id, description, amount, type, status, date) {
-    editingFinanceId = id;
-    document.getElementById("financeDescription").value = description;
-    document.getElementById("financeAmount").value = amount;
-    document.getElementById("financeType").value = type;
-    document.getElementById("financeStatus").value = status;
-    document.getElementById("financeDate").value = date !== 'null' ? date : '';
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
 
 function cancelFinanceEdit() {
     editingFinanceId = null;
     document.getElementById("financeForm").reset();
-}
-
-function deleteFinance(id) {
-    if (confirm("Delete this finance record?")) {
-        fetch(`/api/finance/${id}`, { method: "DELETE" }).then(() => { showSuccess("Record deleted!"); location.reload(); });
-    }
 }
 /*]]>*/
 </script>

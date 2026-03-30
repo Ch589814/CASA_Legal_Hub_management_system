@@ -222,9 +222,15 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(client) })
         .then(r => {
             if (!r.ok) return r.json().then(body => {
-                (body.errors || []).forEach(err => {
-                    const [field] = err.split(":");
-                    setFieldError(field.trim(), err.split(":")[1].trim());
+                const errors = body.errors || [];
+                const duplicateMsg = errors.find(e => e.includes("already exists"));
+                if (duplicateMsg) {
+                    showError("Client already exists. Please open a new case for the existing client.");
+                    throw new Error("duplicate");
+                }
+                errors.forEach(err => {
+                    const parts = err.split(":");
+                    if (parts.length >= 2) setFieldError(parts[0].trim(), parts.slice(1).join(":").trim());
                 });
                 throw new Error("validation");
             });
@@ -237,7 +243,7 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "Client updated successfully!" : "Client registered successfully!");
             editingId = null;
         })
-        .catch(err => { if (err.message !== "validation") showError("Something went wrong."); });
+        .catch(err => { if (err.message !== "validation" && err.message !== "duplicate") showError("Something went wrong."); });
 });
 
 function deleteClient(id) {

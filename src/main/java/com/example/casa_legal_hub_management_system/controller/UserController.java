@@ -1,5 +1,6 @@
 package com.example.casa_legal_hub_management_system.controller;
 
+import com.example.casa_legal_hub_management_system.dto.UserDTO;
 import com.example.casa_legal_hub_management_system.model.User;
 import com.example.casa_legal_hub_management_system.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -24,9 +25,20 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private UserDTO toDTO(User u) {
+        UserDTO dto = new UserDTO();
+        dto.setId(u.getId());
+        dto.setFullName(u.getFullName());
+        dto.setEmail(u.getEmail());
+        dto.setRole(u.getRole());
+        dto.setStatus(u.getStatus());
+        dto.setCreatedAt(u.getCreatedAt());
+        return dto;
+    }
+
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @PostMapping
@@ -38,7 +50,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("errors", errors));
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return ResponseEntity.ok(userRepository.save(user));
+        return ResponseEntity.ok(toDTO(userRepository.save(user)));
     }
 
     @PutMapping("/{id}")
@@ -50,12 +62,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("errors", errors));
         }
         user.setId(id);
-        // only re-hash if password was changed
         userRepository.findById(id).ifPresent(existing -> {
             if (user.getPassword().equals(existing.getPassword())) return;
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         });
-        return ResponseEntity.ok(userRepository.save(user));
+        return ResponseEntity.ok(toDTO(userRepository.save(user)));
     }
 
     @DeleteMapping("/{id}")
@@ -68,7 +79,7 @@ public class UserController {
     public ResponseEntity<?> activateUser(@PathVariable Long id) {
         return userRepository.findById(id).map(u -> {
             u.setStatus("Active");
-            return ResponseEntity.ok(userRepository.save(u));
+            return ResponseEntity.ok(toDTO(userRepository.save(u)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -76,7 +87,7 @@ public class UserController {
     public ResponseEntity<?> deactivateUser(@PathVariable Long id) {
         return userRepository.findById(id).map(u -> {
             u.setStatus("Inactive");
-            return ResponseEntity.ok(userRepository.save(u));
+            return ResponseEntity.ok(toDTO(userRepository.save(u)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -84,7 +95,7 @@ public class UserController {
     public ResponseEntity<?> rejectUser(@PathVariable Long id) {
         return userRepository.findById(id).map(u -> {
             u.setStatus("Inactive");
-            return ResponseEntity.ok(userRepository.save(u));
+            return ResponseEntity.ok(toDTO(userRepository.save(u)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -92,7 +103,7 @@ public class UserController {
     public ResponseEntity<?> promoteUser(@PathVariable Long id) {
         return userRepository.findById(id).map(u -> {
             u.setRole("ADMIN");
-            return ResponseEntity.ok(userRepository.save(u));
+            return ResponseEntity.ok(toDTO(userRepository.save(u)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -100,7 +111,7 @@ public class UserController {
     public ResponseEntity<?> demoteUser(@PathVariable Long id) {
         return userRepository.findById(id).map(u -> {
             u.setRole("STAFF");
-            return ResponseEntity.ok(userRepository.save(u));
+            return ResponseEntity.ok(toDTO(userRepository.save(u)));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

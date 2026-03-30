@@ -13,4 +13,8 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Optional<Client> findByIdNumber(String idNumber);
 
     boolean existsByIdNumber(String idNumber);
+
+    List<Client> findByFullNameContainingIgnoreCaseOrIdNumberContainingOrPhoneContaining(String name, String idNumber, String phone);
+
+    List<Client> findTop5ByOrderByCreatedAtDesc();
 }

@@ -32,6 +32,18 @@
 
 <div class="container">
 
+    <!-- Court Date Alert -->
+    <div th:if="${not #lists.isEmpty(upcomingCourtCases)}" style="background:#fff3cd; border:1px solid #ffc107; color:#856404; padding:14px 20px; border-radius:8px; margin-bottom:18px;">
+        <strong>⚠️ Upcoming Court Dates (Next 7 Days)</strong>
+        <ul style="margin:8px 0 0; padding-left:20px;">
+            <li th:each="c : ${upcomingCourtCases}">
+                <strong th:text="${c.caseNumber}"></strong> —
+                <span th:text="${c.client != null ? c.client.fullName : 'Unknown'}"></span> —
+                Court on <strong th:text="${c.courtDate}"></strong>
+            </li>
+        </ul>
+    </div>
+
     <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div>

@@ -2,6 +2,8 @@ package com.example.casa_legal_hub_management_system.controller;
 
 import com.example.casa_legal_hub_management_system.model.User;
 import com.example.casa_legal_hub_management_system.repository.UserRepository;
+import com.example.casa_legal_hub_management_system.security.UserPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -125,5 +127,33 @@ public class AuthController {
         userRepository.save(user);
         redirectAttributes.addFlashAttribute("success", "Password reset successfully! Please log in.");
         return "redirect:/login";
+    }
+
+    // ── Change Password (Profile) ─────────────────────────────────
+    @PostMapping("/profile/change-password")
+    public String changePassword(@RequestParam String currentPassword,
+                                  @RequestParam String newPassword,
+                                  @RequestParam String confirmPassword,
+                                  Authentication authentication,
+                                  RedirectAttributes redirectAttributes) {
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+        User user = userRepository.findById(principal.getId()).orElseThrow();
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            redirectAttributes.addFlashAttribute("error", "Current password is incorrect.");
+            return "redirect:/profile";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("error", "New passwords do not match.");
+            return "redirect:/profile";
+        }
+        if (newPassword.length() < 6) {
+            redirectAttributes.addFlashAttribute("error", "Password must be at least 6 characters.");
+            return "redirect:/profile";
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        redirectAttributes.addFlashAttribute("success", "Password changed successfully!");
+        return "redirect:/profile";
     }
 }

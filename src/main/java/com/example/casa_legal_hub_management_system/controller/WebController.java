@@ -1,12 +1,15 @@
 package com.example.casa_legal_hub_management_system.controller;
 
 import com.example.casa_legal_hub_management_system.repository.*;
+import com.example.casa_legal_hub_management_system.security.UserPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.time.LocalDate;
 
 @Controller
 public class WebController {
@@ -40,19 +43,32 @@ public class WebController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
+        UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
         model.addAttribute("isAdmin", isAdmin);
-        model.addAttribute("userName", auth.getName());
+        model.addAttribute("userName", principal.getFullName());
         model.addAttribute("totalClients", clientRepository.count());
         model.addAttribute("totalCases", caseRepository.count());
         model.addAttribute("totalDocuments", documentRepository.count());
-        model.addAttribute("recentClients", clientRepository.findAll());
-        model.addAttribute("recentCases", caseRepository.findAll());
+        model.addAttribute("recentClients", clientRepository.findTop5ByOrderByCreatedAtDesc());
+        model.addAttribute("recentCases", caseRepository.findTop5ByOrderByCreatedAtDesc());
+
+        // Court dates in the next 7 days
+        LocalDate today = LocalDate.now();
+        model.addAttribute("upcomingCourtCases",
+                caseRepository.findByCourtDateBetween(today, today.plusDays(7)));
 
         if (isAdmin) {
             model.addAttribute("totalUsers", userRepository.count());
             model.addAttribute("allUsers", userRepository.findAll());
         }
         return "dashboard";
+    }
+
+    @GetMapping("/profile")
+    public String profile(Model model, Authentication auth) {
+        UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+        model.addAttribute("currentUser", principal.getUser());
+        return "profile";
     }
 
     @GetMapping("/clients")

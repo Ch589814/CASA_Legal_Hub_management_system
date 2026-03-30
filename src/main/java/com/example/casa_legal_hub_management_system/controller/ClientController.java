@@ -88,6 +88,6 @@ public class ClientController {
 
     @GetMapping("/search")
     public List<Client> searchClients(@RequestParam String keyword) {
-        return clientRepository.findByFullNameContainingIgnoreCase(keyword);
+        return clientRepository.findByFullNameContainingIgnoreCaseOrIdNumberContainingOrPhoneContaining(keyword, keyword, keyword);
     }
 }

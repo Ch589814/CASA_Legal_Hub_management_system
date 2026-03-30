@@ -78,6 +78,13 @@ function renderTable(data) {
         tr.appendChild(makeCell(f.description));
         tr.appendChild(makeCell(f.serviceType || "-"));
         tr.appendChild(makeCell(formatRWF(f.amount)));
+        tr.appendChild(makeCell(formatRWF(f.amountPaid)));
+        const balance = (f.amount || 0) - (f.amountPaid || 0);
+        const balTd = document.createElement("td");
+        balTd.textContent = formatRWF(balance);
+        balTd.style.color = balance > 0 ? "#e74c3c" : "#27ae60";
+        balTd.style.fontWeight = "bold";
+        tr.appendChild(balTd);
         tr.appendChild(makeCell(f.paymentMethod || "-"));
         tr.appendChild(makeCell(f.type));
 
@@ -219,6 +226,7 @@ document.getElementById("financeForm").addEventListener("submit", function(e) {
     const payload = {
         description:   description,
         amount:        document.getElementById("financeAmount").value || 0,
+        amountPaid:    document.getElementById("financeAmountPaid").value || 0,
         serviceType:   document.getElementById("financeServiceType").value,
         paymentMethod: document.getElementById("paymentMethod").value,
         type:          document.getElementById("financeType").value,
@@ -247,6 +255,7 @@ function editFinance(f) {
     editingId = f.id;
     document.getElementById("financeDescription").value  = f.description   || "";
     document.getElementById("financeAmount").value       = f.amount        || "";
+    document.getElementById("financeAmountPaid").value   = f.amountPaid    || "";
     document.getElementById("financeServiceType").value  = f.serviceType   || "";
     document.getElementById("paymentMethod").value       = f.paymentMethod || "";
     document.getElementById("financeType").value         = f.type          || "";

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Profile - CASA Legal Hub</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #7f8c8d; font-weight: bold; }
+        .info-value { color: #2c3e50; }
+        .password-wrapper { position: relative; }
+        .password-wrapper input { width: 100%; padding: 10px 40px 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .toggle-pwd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 15px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container">
+
+    <div th:if="${success}" class="success-msg" th:text="${success}" style="margin-bottom:16px;"></div>
+    <div th:if="${error}" class="error-msg" th:text="${error}" style="margin-bottom:16px;"></div>
+
+    <div class="profile-grid">
+
+        <!-- Account Info -->
+        <div class="card">
+            <h2>👤 My Account</h2>
+            <div class="info-row">
+                <span class="info-label">Full Name</span>
+                <span class="info-value" th:text="${currentUser.fullName}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value" th:text="${currentUser.email}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Role</span>
+                <span th:text="${currentUser.role}"
+                      th:classappend="${currentUser.role == 'ADMIN'} ? 'badge badge-admin' : 'badge badge-staff'"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span th:text="${currentUser.status}"
+                      th:classappend="${currentUser.status == 'Active'} ? 'badge badge-active' : 'badge badge-inactive'"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Member Since</span>
+                <span class="info-value" th:text="${currentUser.createdAt}"></span>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card">
+            <h2>🔐 Change Password</h2>
+            <form th:action="@{/profile/change-password}" method="post" onsubmit="return validatePwdForm()">
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-weight:bold; color:#555; margin-bottom:6px; font-size:14px;">Current Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password" required>
+                        <button type="button" class="toggle-pwd" onclick="togglePwd('currentPassword', this)">👁</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-weight:bold; color:#555; margin-bottom:6px; font-size:14px;">New Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="newPassword" name="newPassword" placeholder="Min 6 characters" required minlength="6">
+                        <button type="button" class="toggle-pwd" onclick="togglePwd('newPassword', this)">👁</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:18px;">
+                    <label style="display:block; font-weight:bold; color:#555; margin-bottom:6px; font-size:14px;">Confirm New Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter new password" required minlength="6">
+                        <button type="button" class="toggle-pwd" onclick="togglePwd('confirmPassword', this)">👁</button>
+                    </div>
+                    <span id="pwdError" style="color:#e74c3c; font-size:12px; display:none;">Passwords do not match.</span>
+                </div>
+                <button type="submit" style="background:#27ae60; color:white; padding:11px 24px; border:none; border-radius:6px; font-size:15px; font-weight:bold; cursor:pointer;">💾 Update Password</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function togglePwd(id, btn) {
+        const input = document.getElementById(id);
+        const hidden = input.type === 'password';
+        input.type = hidden ? 'text' : 'password';
+        btn.textContent = hidden ? '🙈' : '👁';
+    }
+    function validatePwdForm() {
+        const np = document.getElementById('newPassword').value;
+        const cp = document.getElementById('confirmPassword').value;
+        const err = document.getElementById('pwdError');
+        if (np !== cp) { err.style.display = 'block'; return false; }
+        err.style.display = 'none';
+        return true;
+    }
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const err = document.getElementById('pwdError');
+        err.style.display = (this.value && this.value !== document.getElementById('newPassword').value) ? 'block' : 'none';
+    });
+</script>
+</body>
+</html>

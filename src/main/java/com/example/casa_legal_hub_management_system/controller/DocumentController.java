@@ -94,13 +94,29 @@ public class DocumentController {
     public ResponseEntity<byte[]> viewDocument(@PathVariable Long id) {
         return documentRepository.findById(id).map(doc -> {
             String mimeType = doc.getMimeType() != null
-                    ? doc.getMimeType() : "application/octet-stream";
+                    ? doc.getMimeType() : detectMimeType(doc.getFileName());
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(mimeType))
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" + doc.getFileName() + "\"")
+                    .header("X-Frame-Options", "SAMEORIGIN")
                     .body(doc.getFileData());
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    private String detectMimeType(String fileName) {
+        if (fileName == null) return "application/octet-stream";
+        String lower = fileName.toLowerCase();
+        if (lower.endsWith(".pdf"))  return "application/pdf";
+        if (lower.endsWith(".png"))  return "image/png";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        if (lower.endsWith(".gif"))  return "image/gif";
+        if (lower.endsWith(".txt"))  return "text/plain";
+        if (lower.endsWith(".doc"))  return "application/msword";
+        if (lower.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        if (lower.endsWith(".xls"))  return "application/vnd.ms-excel";
+        if (lower.endsWith(".xlsx")) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        return "application/octet-stream";
     }
 
     @DeleteMapping("/{id}")

@@ -91,6 +91,7 @@ function renderTable(data) {
         const viewBtn = document.createElement("a");
         viewBtn.href = `/api/documents/view/${d.id}`;
         viewBtn.target = "_blank";
+        viewBtn.rel = "noopener noreferrer";
         viewBtn.textContent = "👁 View";
         viewBtn.style.cssText = "background:#3498db; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
         actionTd.appendChild(viewBtn);

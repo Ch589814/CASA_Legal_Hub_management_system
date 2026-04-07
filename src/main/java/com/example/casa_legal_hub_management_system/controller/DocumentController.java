@@ -1,12 +1,8 @@
 package com.example.casa_legal_hub_management_system.controller;
 
-import com.example.casa_legal_hub_management_system.model.Client;
 import com.example.casa_legal_hub_management_system.model.Document;
 import com.example.casa_legal_hub_management_system.repository.ClientRepository;
 import com.example.casa_legal_hub_management_system.repository.DocumentRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -27,10 +20,8 @@ public class DocumentController {
     private final DocumentRepository documentRepository;
     private final ClientRepository clientRepository;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
-    public DocumentController(DocumentRepository documentRepository, ClientRepository clientRepository) {
+    public DocumentController(DocumentRepository documentRepository,
+                               ClientRepository clientRepository) {
         this.documentRepository = documentRepository;
         this.clientRepository = clientRepository;
     }
@@ -63,27 +54,14 @@ public class DocumentController {
         }
 
         try {
-            // Create uploads directory if it doesn't exist
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-            Files.createDirectories(uploadPath);
-
-            // Generate unique filename to avoid conflicts
-            String originalName = file.getOriginalFilename();
-            String extension = originalName != null && originalName.contains(".")
-                    ? originalName.substring(originalName.lastIndexOf("."))
-                    : "";
-            String storedName = UUID.randomUUID().toString() + extension;
-            Path targetPath = uploadPath.resolve(storedName);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            // Save document record
             Document doc = new Document();
-            doc.setFileName(originalName);
+            doc.setFileName(file.getOriginalFilename());
             doc.setFileType(fileType);
-            doc.setFilePath(storedName);
+            doc.setMimeType(file.getContentType());
             doc.setCategory(category);
             doc.setDescription(description);
             doc.setUploadDate(LocalDate.now());
+            doc.setFileData(file.getBytes());
 
             if (clientId != null) {
                 clientRepository.findById(clientId).ifPresent(doc::setClient);
@@ -92,45 +70,42 @@ public class DocumentController {
             return ResponseEntity.ok(documentRepository.save(doc));
 
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Failed to upload file: " + e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body("Failed to upload file: " + e.getMessage());
         }
     }
 
+    // Download file
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable Long id) {
-        Document doc = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
-
-        try {
-            Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(doc.getFilePath());
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (!resource.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            String contentType = "application/octet-stream";
+    public ResponseEntity<byte[]> downloadDocument(@PathVariable Long id) {
+        return documentRepository.findById(id).map(doc -> {
+            String mimeType = doc.getMimeType() != null
+                    ? doc.getMimeType() : "application/octet-stream";
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
+                    .contentType(MediaType.parseMediaType(mimeType))
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "attachment; filename=\"" + doc.getFileName() + "\"")
-                    .body(resource);
+                    .body(doc.getFileData());
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
-        } catch (MalformedURLException e) {
-            return ResponseEntity.internalServerError().build();
-        }
+    // View file in browser
+    @GetMapping("/view/{id}")
+    public ResponseEntity<byte[]> viewDocument(@PathVariable Long id) {
+        return documentRepository.findById(id).map(doc -> {
+            String mimeType = doc.getMimeType() != null
+                    ? doc.getMimeType() : "application/octet-stream";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(mimeType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + doc.getFileName() + "\"")
+                    .body(doc.getFileData());
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
-        documentRepository.findById(id).ifPresent(doc -> {
-            // Delete physical file
-            try {
-                Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(doc.getFilePath());
-                Files.deleteIfExists(filePath);
-            } catch (IOException ignored) {}
-            documentRepository.delete(doc);
-        });
+        documentRepository.findById(id).ifPresent(documentRepository::delete);
         return ResponseEntity.ok().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.casa_legal_hub_management_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,13 +19,18 @@ public class Document {
 
     private String fileName;
     private String fileType;
-    private String filePath;
+    private String mimeType;
     private String category = "Client Document";
 
     @Column(length = 500)
     private String description;
 
     private LocalDate uploadDate = LocalDate.now();
+
+    @Lob
+    @JsonIgnore  // don't send file bytes in list API responses
+    @Column(columnDefinition = "bytea")
+    private byte[] fileData;
 
     @ManyToOne
     @JoinColumn(name = "client_id")

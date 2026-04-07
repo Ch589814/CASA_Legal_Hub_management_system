@@ -88,13 +88,20 @@ function renderTable(data) {
 
         const actionTd = document.createElement("td");
 
-        const viewBtn = document.createElement("a");
-        viewBtn.href = `/api/documents/view/${d.id}`;
-        viewBtn.target = "_blank";
-        viewBtn.rel = "noopener noreferrer";
-        viewBtn.textContent = "👁 View";
-        viewBtn.style.cssText = "background:#3498db; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
-        actionTd.appendChild(viewBtn);
+        // Only show View for files browser can display
+        const viewable = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.txt'];
+        const ext = (d.fileName || '').toLowerCase().substring((d.fileName || '').lastIndexOf('.'));
+        const canView = viewable.includes(ext);
+
+        if (canView) {
+            const viewBtn = document.createElement("a");
+            viewBtn.href = `/api/documents/view/${d.id}`;
+            viewBtn.target = "_blank";
+            viewBtn.rel = "noopener noreferrer";
+            viewBtn.textContent = "👁 View";
+            viewBtn.style.cssText = "background:#3498db; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
+            actionTd.appendChild(viewBtn);
+        }
 
         const downloadBtn = document.createElement("a");
         downloadBtn.href = `/api/documents/download/${d.id}`;

@@ -93,13 +93,16 @@ public class DocumentController {
     @GetMapping("/view/{id}")
     public ResponseEntity<byte[]> viewDocument(@PathVariable Long id) {
         return documentRepository.findById(id).map(doc -> {
-            String mimeType = doc.getMimeType() != null
-                    ? doc.getMimeType() : detectMimeType(doc.getFileName());
+            String mimeType = detectMimeType(doc.getFileName());
+            // Override stored mimeType with detected one for accuracy
+            if (doc.getMimeType() != null && !doc.getMimeType().equals("application/octet-stream")) {
+                mimeType = doc.getMimeType();
+            }
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(mimeType))
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" + doc.getFileName() + "\"")
-                    .header("X-Frame-Options", "SAMEORIGIN")
+                    .header("Cache-Control", "no-cache")
                     .body(doc.getFileData());
         }).orElse(ResponseEntity.notFound().build());
     }

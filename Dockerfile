@@ -6,6 +6,9 @@ RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+
 COPY --from=build /app/target/CASA_Legal_Hub_management_system-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 7860
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
+
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=$PORT -Dserver.address=0.0.0.0 -Dspring.profiles.active=prod -jar app.jar"]

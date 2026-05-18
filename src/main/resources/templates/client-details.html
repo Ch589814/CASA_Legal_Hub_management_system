@@ -348,10 +348,8 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".btn-del-case").forEach(btn => {
         btn.addEventListener("click", function() {
             const id = this.dataset.id;
-            if (confirm("Delete this case?")) {
-                fetch(`/api/cases/${id}`, { method: "DELETE" })
-                    .then(() => { showSuccess("Case deleted!"); setTimeout(() => location.reload(), 1000); });
-            }
+            fetch(`/api/cases/${id}`, { method: "DELETE" })
+                .then(() => { showSuccess("Case deleted!"); setTimeout(() => location.reload(), 1000); });
         });
     });
 
@@ -371,10 +369,8 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".btn-del-finance").forEach(btn => {
         btn.addEventListener("click", function() {
             const id = this.dataset.id;
-            if (confirm("Delete this finance record?")) {
-                fetch(`/api/finance/${id}`, { method: "DELETE" })
-                    .then(() => { showSuccess("Record deleted!"); setTimeout(() => location.reload(), 1000); });
-            }
+            fetch(`/api/finance/${id}`, { method: "DELETE" })
+                .then(() => { showSuccess("Record deleted!"); setTimeout(() => location.reload(), 1000); });
         });
     });
 });

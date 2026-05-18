@@ -29,6 +29,15 @@ function showConfirm(message, onConfirm) {
     };
 }
 
+function clearErrors() {
+    ["financeDescription", "financeAmount", "financeAmountPaid"].forEach(f => {
+        const input = document.getElementById(f);
+        const err   = document.getElementById("err-" + f.replace("finance", "").toLowerCase());
+        if (input) input.classList.remove("error-field");
+        if (err)   err.textContent = "";
+    });
+}
+
 function makeStatusBadge(status) {
     const map = {
         Approved: "badge-paid",
@@ -218,10 +227,24 @@ function refundFinance(id, description) {
 // ── FORM SUBMIT ───────────────────────────────────────────────────
 document.getElementById("financeForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    clearErrors();
     const clientId = document.getElementById("clientId").value;
-    if (!clientId) { showError("Please select a client."); return; }
+    if (!clientId) {
+        showError("Please select a client.");
+        document.getElementById("clientId").classList.add("error-field");
+        // No err-client span in finance.html yet, but we add it to be consistent
+        const clientErr = document.getElementById("err-client");
+        if (clientErr) clientErr.textContent = "Please select a client.";
+        return;
+    }
     const description = document.getElementById("financeDescription").value.trim();
-    if (!description) { showError("Description is required."); return; }
+    if (!description) {
+        showError("Description is required.");
+        document.getElementById("financeDescription").classList.add("error-field");
+        const descErr = document.getElementById("err-description");
+        if (descErr) descErr.textContent = "Description is required.";
+        return;
+    }
 
     const payload = {
         description:   description,
@@ -270,6 +293,7 @@ function cancelEdit() {
     editingId = null;
     document.getElementById("financeForm").reset();
     document.getElementById("formTitle").textContent = "💰 Add Finance Record";
+    clearErrors();
 }
 
 function deleteFinance(id) {

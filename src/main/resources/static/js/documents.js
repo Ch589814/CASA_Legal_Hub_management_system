@@ -47,8 +47,17 @@ function handleCategoryChange() {
     }
 }
 
+function clearErrors() {
+    const FIELDS = ["docFile", "docClientId"];
+    FIELDS.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.classList.remove("error-field");
+        const err = document.getElementById("err-" + f);
+        if (err) err.textContent = "";
+    });
+}
+
 function makeCategoryBadge(category) {
-    const td = document.createElement("td");
     const span = document.createElement("span");
     span.className = "category-badge";
     if (category === "Client Document") { span.classList.add("cat-client"); span.textContent = "📋 Client"; }
@@ -168,6 +177,7 @@ function loadDocuments() {
 
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    clearErrors();
 
     const category = document.getElementById("docCategory").value;
     const clientId = document.getElementById("docClientId").value;
@@ -176,17 +186,19 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     if (!fileInput.files || fileInput.files.length === 0) {
         showError("Please select a file to upload.");
         fileInput.classList.add("error-field");
+        const fileErr = document.getElementById("err-docFile");
+        if (fileErr) fileErr.textContent = "Please select a file.";
         fileInput.focus();
         return;
     }
-    fileInput.classList.remove("error-field");
 
     if (category !== "Staff Resource" && !clientId) {
         showError("Please select a client for this document type.");
         document.getElementById("docClientId").classList.add("error-field");
+        const clientErr = document.getElementById("err-docClientId");
+        if (clientErr) clientErr.textContent = "Client selection is required.";
         return;
     }
-    document.getElementById("docClientId").classList.remove("error-field");
 
     const formData = new FormData();
     formData.append("file",        fileInput.files[0]);
@@ -211,6 +223,7 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
 function resetForm() {
     document.getElementById("uploadForm").reset();
     handleCategoryChange();
+    clearErrors();
 }
 
 function deleteDocument(id) {

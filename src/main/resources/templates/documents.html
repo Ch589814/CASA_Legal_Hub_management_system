@@ -31,10 +31,12 @@
                     <option value="">-- Select Client --</option>
                     <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
                 </select>
+                <span class="field-error" id="err-docClientId"></span>
             </div>
 
             <label>Select File *</label>
             <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" style="width:55%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+            <span class="field-error" id="err-docFile"></span>
             <span style="font-size:11px; color:#95a5a6; display:block; margin-bottom:10px;">Allowed: PDF, Word, Excel, Images, Text (max 20MB)</span>
 
             <label>File Type</label>

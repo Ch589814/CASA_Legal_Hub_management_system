@@ -17,9 +17,8 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-const FIELDS = ["fullName", "idNumber", "email", "phone", "province", "district", "sector", "cell", "village"];
-
-function clearFieldErrors() {
+function clearErrors() {
+    const FIELDS = ["fullName", "idNumber", "email", "phone", "province", "district", "sector", "cell", "village"];
     FIELDS.forEach(f => {
         const input = document.getElementById(f);
         const err   = document.getElementById("err-" + f);
@@ -72,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
 function validateForm() {
     let valid = true;
     let firstErrorField = null;
-    clearFieldErrors();
+    clearErrors();
 
     const fullName = document.getElementById("fullName").value.trim();
     if (!fullName) {
@@ -275,7 +274,7 @@ function editClient(c) {
 function cancelEdit() {
     document.getElementById("clientForm").reset();
     document.getElementById("formTitle").textContent = "➕ Register New Client";
-    clearFieldErrors();
+    clearErrors();
     editingId = null;
 }
 

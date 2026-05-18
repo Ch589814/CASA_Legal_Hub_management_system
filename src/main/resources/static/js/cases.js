@@ -35,6 +35,18 @@ function makeCell(text) {
     return td;
 }
 
+function clearErrors() {
+    ["clientId", "caseNumber", "caseServiceType"].forEach(f => {
+        const input = document.getElementById(f);
+        const err   = document.getElementById("err-" + f.replace("case", "").charAt(0).toLowerCase() + f.replace("case", "").slice(1));
+        if (input) input.classList.remove("error-field");
+        if (err)   err.textContent = "";
+    });
+    // Special handling for client error which doesn't follow the pattern exactly
+    const clientErr = document.getElementById("err-client");
+    if (clientErr) clientErr.textContent = "";
+}
+
 function makeStatusBadge(status) {
     const map = { Open: "badge-open", Closed: "badge-closed", Pending: "badge-pending", "In Progress": "badge-pending", Won: "badge-paid", Lost: "badge-overdue" };
     const span = document.createElement("span");
@@ -113,8 +125,15 @@ function loadCases() {
 
 document.getElementById("caseForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    clearErrors();
     const clientId = document.getElementById("clientId").value;
-    if (!clientId) { showError("Please select a client."); return; }
+    if (!clientId) {
+        showError("Please select a client.");
+        document.getElementById("clientId").classList.add("error-field");
+        const clientErr = document.getElementById("err-client");
+        if (clientErr) clientErr.textContent = "Please select a client.";
+        return;
+    }
     const payload = {
         caseNumber:  document.getElementById("caseNumber").value,
         serviceType: document.getElementById("caseServiceType") ? document.getElementById("caseServiceType").value : "",
@@ -157,6 +176,7 @@ function cancelEdit() {
     editingId = null;
     document.getElementById("caseForm").reset();
     document.getElementById("formTitle").textContent = "Add New Case";
+    clearErrors();
 }
 
 function deleteCase(id) {

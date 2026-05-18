@@ -22,6 +22,7 @@
                         <option value="">-- Select Client --</option>
                         <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
                     </select>
+                    <span class="field-error" id="err-client"></span>
 
                     <label>Description</label>
                     <input type="text" id="financeDescription" placeholder="e.g. Legal consultation fee">
@@ -29,9 +30,11 @@
 
                     <label>Amount (RWF)</label>
                     <input type="number" id="financeAmount" placeholder="0" step="1" min="0">
+                    <span class="field-error" id="err-amount"></span>
 
                     <label>Amount Paid (RWF)</label>
                     <input type="number" id="financeAmountPaid" placeholder="0" step="1" min="0">
+                    <span class="field-error" id="err-amountpaid"></span>
 
                     <label>Service Type</label>
                     <select id="financeServiceType" style="width:55%;">

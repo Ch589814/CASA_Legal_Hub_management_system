@@ -3,6 +3,8 @@ package com.example.casa_legal_hub_management_system.controller;
 import com.example.casa_legal_hub_management_system.model.User;
 import com.example.casa_legal_hub_management_system.repository.UserRepository;
 import com.example.casa_legal_hub_management_system.security.UserPrincipal;
+import com.example.casa_legal_hub_management_system.service.EmailService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -18,10 +20,12 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @GetMapping("/login")
@@ -70,20 +74,31 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public String forgotPasswordSubmit(@RequestParam String email, RedirectAttributes redirectAttributes) {
+    public String forgotPasswordSubmit(@RequestParam String email, 
+                                       HttpServletRequest request,
+                                       RedirectAttributes redirectAttributes) {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "No account found with that email address.");
             return "redirect:/forgot-password";
         }
+        
         String token = UUID.randomUUID().toString();
         User user = userOpt.get();
         user.setResetToken(token);
         userRepository.save(user);
-        // In production you would email the link — for now show it directly
-        redirectAttributes.addFlashAttribute("success",
-                "Password reset link generated. Use this token to reset: " + token);
-        redirectAttributes.addFlashAttribute("resetToken", token);
+        
+        // Get base URL for email link
+        String baseUrl = request.getScheme() + "://" + request.getServerName();
+        if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+            baseUrl += ":" + request.getServerPort();
+        }
+        
+        // Send email with reset link
+        emailService.sendPasswordResetEmail(email, token, baseUrl);
+        
+        redirectAttributes.addFlashAttribute("success", 
+                "Password reset instructions have been sent to your email address.");
         return "redirect:/forgot-password";
     }
 

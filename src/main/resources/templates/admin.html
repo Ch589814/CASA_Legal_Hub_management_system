@@ -214,55 +214,109 @@
             </p>
 
             <!-- Pending Accounts -->
-            <h3 style="color:#f39c12;">⏳ Pending Accounts <small style="color:#7f8c8d;">(waiting for your approval)</small></h3>
-            <table style="margin-bottom:24px;">
-                <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Registered</th><th>Action</th></tr></thead>
-                <tbody>
-                    <tr th:each="u, s : ${allUsers}" th:if="${u.status == 'Pending'}" class="warning-row">
-                        <td th:text="${s.count}"></td>
-                        <td th:text="${u.fullName}"></td>
-                        <td th:text="${u.email}"></td>
-                        <td th:text="${u.createdAt}"></td>
-                        <td>
-                            <button class="action-btn btn-activate"
-                                    th:onclick="|staffAction(${u.id}, 'activate')|">✅ Approve &amp; Activate</button>
-                            <button class="action-btn btn-deactivate"
-                                    th:onclick="|staffAction(${u.id}, 'reject')|">❌ Reject</button>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(allUsers.?[status == 'Pending'])}">
-                        <td colspan="5" style="text-align:center;color:#999;">No pending accounts.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <h3 style="color:#f39c12; margin-bottom: 15px;">⏳ Pending Accounts <small style="color:#7f8c8d;">(waiting for your approval)</small></h3>
+            <div style="overflow-x: auto; margin-bottom: 30px;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <thead style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">
+                        <tr>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">#</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">👤 Full Name</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">📧 Email</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">📅 Registered</th>
+                            <th style="padding: 12px 15px; text-align: center; font-weight: 600; font-size: 13px;">⚙️ Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u, s : ${allUsers}" th:if="${u.status == 'Pending'}" 
+                            style="border-bottom: 1px solid #ecf0f1; background: #fff9f0; transition: background-color 0.2s;"
+                            onmouseover="this.style.backgroundColor='#fef5e7'"
+                            onmouseout="this.style.backgroundColor='#fff9f0'">
+                            <td style="padding: 15px; font-weight: 600; color: #2c3e50;" th:text="${s.count}"></td>
+                            <td style="padding: 15px; color: #2c3e50; font-weight: 500;" th:text="${u.fullName}"></td>
+                            <td style="padding: 15px; color: #7f8c8d; font-size: 13px;" th:text="${u.email}"></td>
+                            <td style="padding: 15px; color: #7f8c8d; font-size: 13px;" th:text="${u.createdAt}"></td>
+                            <td style="padding: 15px; text-align: center;">
+                                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                                    <button class="action-btn btn-activate"
+                                            style="padding: 8px 16px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #27ae60; color: white;"
+                                            onmouseover="this.style.background='#229954'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(39,174,96,0.3)'"
+                                            onmouseout="this.style.background='#27ae60'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                                            th:onclick="|staffAction(${u.id}, 'activate')|">✅ Approve & Activate</button>
+                                    <button class="action-btn btn-deactivate"
+                                            style="padding: 8px 16px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #e74c3c; color: white;"
+                                            onmouseover="this.style.background='#c0392b'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(231,76,60,0.3)'"
+                                            onmouseout="this.style.background='#e74c3c'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                                            th:onclick="|staffAction(${u.id}, 'reject')|">❌ Reject</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(allUsers.?[status == 'Pending'])}">
+                            <td colspan="5" style="padding: 30px; text-align: center; color: #bdc3c7; font-style: italic;">👥 No pending accounts.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Active Staff -->
             <h3>✅ Active Staff Members</h3>
-                <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Admin Actions</th></tr></thead>
-                <tbody>
-                    <tr th:each="u, s : ${allUsers}">
-                        <td th:text="${s.count}"></td>
-                        <td th:text="${u.fullName}"></td>
-                        <td th:text="${u.email}"></td>
-                        <td><span th:text="${u.role}" th:classappend="${u.role == 'ADMIN'} ? 'badge badge-admin' : 'badge badge-staff'"></span></td>
-                        <td><span th:text="${u.status}" th:classappend="${u.status == 'Active'} ? 'badge badge-active' : 'badge badge-inactive'"></span></td>
-                        <td th:text="${u.createdAt}"></td>
-                        <td>
-                            <button th:if="${u.status == 'Active'}" class="action-btn btn-deactivate"
-                                    th:onclick="|staffAction(${u.id}, 'deactivate')|">🚫 Deactivate</button>
-                            <button th:if="${u.status == 'Inactive'}" class="action-btn btn-activate"
-                                    th:onclick="|staffAction(${u.id}, 'activate')|">✅ Activate</button>
-                            <button th:if="${u.role == 'STAFF'}" class="action-btn btn-promote"
-                                    th:onclick="|staffAction(${u.id}, 'promote')|">⬆️ Promote to Admin</button>
-                            <button th:if="${u.role == 'ADMIN'}" class="action-btn btn-demote"
-                                    th:onclick="|staffAction(${u.id}, 'demote')|">⬇️ Demote to Staff</button>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(allUsers)}">
-                        <td colspan="7" style="text-align:center;color:#999;">No users found.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div style="overflow-x: auto; margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <thead style="background: linear-gradient(135deg, #3498db, #2980b9); color: white;">
+                        <tr>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">#</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">👤 Full Name</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">📧 Email</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">🎭 Role</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">📊 Status</th>
+                            <th style="padding: 12px 15px; text-align: left; font-weight: 600; font-size: 13px;">📅 Joined</th>
+                            <th style="padding: 12px 15px; text-align: center; font-weight: 600; font-size: 13px;">⚙️ Admin Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u, s : ${allUsers}" style="border-bottom: 1px solid #ecf0f1; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
+                            <td style="padding: 15px; font-weight: 600; color: #2c3e50;" th:text="${s.count}"></td>
+                            <td style="padding: 15px; color: #2c3e50; font-weight: 500;" th:text="${u.fullName}"></td>
+                            <td style="padding: 15px; color: #7f8c8d; font-size: 13px;" th:text="${u.email}"></td>
+                            <td style="padding: 15px;">
+                                <span th:text="${u.role}" 
+                                      th:style="${u.role == 'ADMIN'} ? 'background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase;' : 'background: linear-gradient(135deg, #27ae60, #229954); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase;'"></span>
+                            </td>
+                            <td style="padding: 15px;">
+                                <span th:text="${u.status}" 
+                                      th:style="${u.status == 'Active'} ? 'background: linear-gradient(135deg, #27ae60, #229954); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;' : 'background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;'"></span>
+                            </td>
+                            <td style="padding: 15px; color: #7f8c8d; font-size: 13px;" th:text="${u.createdAt}"></td>
+                            <td style="padding: 15px; text-align: center;">
+                                <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+                                    <button th:if="${u.status == 'Active'}" class="action-btn btn-deactivate"
+                                            style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #e74c3c; color: white;"
+                                            onmouseover="this.style.background='#c0392b'; this.style.transform='translateY(-1px)'"
+                                            onmouseout="this.style.background='#e74c3c'; this.style.transform='translateY(0)'"
+                                            th:onclick="|staffAction(${u.id}, 'deactivate')|">🚫 Deactivate</button>
+                                    <button th:if="${u.status == 'Inactive'}" class="action-btn btn-activate"
+                                            style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #27ae60; color: white;"
+                                            onmouseover="this.style.background='#229954'; this.style.transform='translateY(-1px)'"
+                                            onmouseout="this.style.background='#27ae60'; this.style.transform='translateY(0)'"
+                                            th:onclick="|staffAction(${u.id}, 'activate')|">✅ Activate</button>
+                                    <button th:if="${u.role == 'STAFF'}" class="action-btn btn-promote"
+                                            style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #8e44ad; color: white;"
+                                            onmouseover="this.style.background='#7d3c98'; this.style.transform='translateY(-1px)'"
+                                            onmouseout="this.style.background='#8e44ad'; this.style.transform='translateY(0)'"
+                                            th:onclick="|staffAction(${u.id}, 'promote')|">⬆️ Promote to Admin</button>
+                                    <button th:if="${u.role == 'ADMIN'}" class="action-btn btn-demote"
+                                            style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #7f8c8d; color: white;"
+                                            onmouseover="this.style.background='#6c7b7d'; this.style.transform='translateY(-1px)'"
+                                            onmouseout="this.style.background='#7f8c8d'; this.style.transform='translateY(0)'"
+                                            th:onclick="|staffAction(${u.id}, 'demote')|">⬇️ Demote to Staff</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(allUsers)}">
+                            <td colspan="7" style="padding: 30px; text-align: center; color: #bdc3c7; font-style: italic;">👥 No users found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- ── RECENT ACTIVITY ────────────────────────────── -->

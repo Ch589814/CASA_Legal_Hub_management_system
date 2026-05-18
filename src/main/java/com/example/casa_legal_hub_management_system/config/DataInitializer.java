@@ -20,7 +20,6 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        // 👉 CHANGE THIS EMAIL TO YOUR REAL EMAIL
         String adminEmail = "clemantineumutesi063@gmail.com";
 
         User admin = userRepository.findByEmail(adminEmail).orElse(null);
@@ -31,13 +30,12 @@ public class DataInitializer implements CommandLineRunner {
             admin.setFullName("System Administrator");
         }
 
-        // Always ensure admin credentials are correct
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setRole("ADMIN");
         admin.setStatus("Active");
 
         userRepository.save(admin);
 
-        System.out.println("✅ ADMIN READY: " + adminEmail + " / admin123");
+        System.out.println("ADMIN READY: " + adminEmail + " / admin123");
     }
 }

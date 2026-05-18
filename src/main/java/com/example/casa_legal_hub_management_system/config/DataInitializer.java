@@ -21,7 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
 
         // 👉 CHANGE THIS EMAIL TO YOUR REAL EMAIL
-        String adminEmail = "your-email@gmail.com";
+        String adminEmail = "clemantineumutesi063@gmail.com";
 
         User admin = userRepository.findByEmail(adminEmail).orElse(null);
 

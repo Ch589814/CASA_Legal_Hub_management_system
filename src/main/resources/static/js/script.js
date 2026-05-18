@@ -25,6 +25,9 @@ function clearErrors() {
         if (input) input.classList.remove("error-field");
         if (err)   err.textContent = "";
     });
+    // Ensure success/error messages are hidden when clearing form
+    document.getElementById("successMsg").style.display = "none";
+    document.getElementById("errorMsg").style.display = "none";
 }
 
 function setFieldError(field, msg) {

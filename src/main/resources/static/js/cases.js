@@ -45,6 +45,9 @@ function clearErrors() {
     // Special handling for client error which doesn't follow the pattern exactly
     const clientErr = document.getElementById("err-client");
     if (clientErr) clientErr.textContent = "";
+
+    document.getElementById("successMsg").style.display = "none";
+    document.getElementById("errorMsg").style.display = "none";
 }
 
 function makeStatusBadge(status) {
@@ -147,7 +150,22 @@ document.getElementById("caseForm").addEventListener("submit", function(e) {
     const url    = editingId ? `/api/cases/${editingId}` : "/api/cases";
     const method = editingId ? "PUT" : "POST";
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        .then(r => { if (!r.ok) { showError("Failed to save case."); throw new Error(); } return r.json(); })
+        .then(r => {
+            if (!r.ok) return r.json().then(body => {
+                (body.errors || []).forEach(err => {
+                    const parts = err.split(":");
+                    if (parts.length >= 2) {
+                        const field = parts[0].trim();
+                        const input = document.getElementById(field);
+                        const span  = document.getElementById("err-" + (field === "client" ? "client" : field.replace("case", "").charAt(0).toLowerCase() + field.replace("case", "").slice(1)));
+                        if (input) input.classList.add("error-field");
+                        if (span)  span.textContent = parts.slice(1).join(":").trim();
+                    }
+                });
+                throw new Error("validation");
+            });
+            return r.json();
+        })
         .then(() => {
             loadCases();
             document.getElementById("caseForm").reset();
@@ -155,7 +173,7 @@ document.getElementById("caseForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "Case updated!" : "Case saved!");
             editingId = null;
         })
-        .catch(() => {});
+        .catch(err => { if (err.message !== "validation") showError("Failed to save case."); });
 });
 
 function editCase(id, caseNumber, serviceType, caseType, status, priority, courtDate, description, clientId) {

@@ -55,9 +55,12 @@ function clearErrors() {
         const err = document.getElementById("err-" + f);
         if (err) err.textContent = "";
     });
+    document.getElementById("successMsg").style.display = "none";
+    document.getElementById("errorMsg").style.display = "none";
 }
 
 function makeCategoryBadge(category) {
+    const td = document.createElement("td");
     const span = document.createElement("span");
     span.className = "category-badge";
     if (category === "Client Document") { span.classList.add("cat-client"); span.textContent = "📋 Client"; }
@@ -211,13 +214,28 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
         method: "POST",
         body: formData
     })
-        .then(r => { if (!r.ok) { showError("Failed to upload file. Please try again."); throw new Error(); } return r.json(); })
+        .then(r => {
+            if (!r.ok) return r.json().then(body => {
+                (body.errors || []).forEach(err => {
+                    const parts = err.split(":");
+                    if (parts.length >= 2) {
+                        const field = parts[0].trim();
+                        const input = document.getElementById(field);
+                        const span  = document.getElementById("err-" + field);
+                        if (input) input.classList.add("error-field");
+                        if (span)  span.textContent = parts.slice(1).join(":").trim();
+                    }
+                });
+                throw new Error("validation");
+            });
+            return r.json();
+        })
         .then(() => {
             loadDocuments();
             resetForm();
             showSuccess("Document uploaded successfully!");
         })
-        .catch(() => {});
+        .catch(err => { if (err.message !== "validation") showError("Failed to upload file. Please try again."); });
 });
 
 function resetForm() {

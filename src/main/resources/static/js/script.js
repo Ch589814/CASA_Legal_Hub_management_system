@@ -15,6 +15,8 @@ function showSuccess(msg) {
 function showError(msg) {
     const el = document.getElementById("errorMsg");
     el.textContent = "❌ " + msg; el.style.display = "block";
+    document.getElementById("successMsg").style.display = "none";
+    setTimeout(() => el.style.display = "none", 5000);
 }
 
 const FIELDS = ["fullName", "idNumber", "email", "phone", "province", "district", "sector", "cell", "village"];

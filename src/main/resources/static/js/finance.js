@@ -9,12 +9,14 @@ function sanitize(str) {
 function showSuccess(msg) {
     const el = document.getElementById("successMsg");
     el.textContent = "✅ " + msg; el.style.display = "block";
+    document.getElementById("errorMsg").style.display = "none";
     setTimeout(() => el.style.display = "none", 4000);
 }
 function showError(msg) {
-    document.getElementById("errorMsg").textContent = "❌ " + msg;
-    document.getElementById("errorMsg").style.display = "block";
-    setTimeout(() => document.getElementById("errorMsg").style.display = "none", 5000);
+    const el = document.getElementById("errorMsg");
+    el.textContent = "❌ " + msg; el.style.display = "block";
+    document.getElementById("successMsg").style.display = "none";
+    setTimeout(() => el.style.display = "none", 5000);
 }
 
 function showConfirm(message, onConfirm) {

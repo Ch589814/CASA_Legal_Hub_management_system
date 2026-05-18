@@ -13,8 +13,10 @@ function showSuccess(msg) {
     setTimeout(() => el.style.display = "none", 4000);
 }
 function showError(msg) {
-    document.getElementById("errorMsg").textContent = "❌ " + msg;
-    document.getElementById("errorMsg").style.display = "block";
+    const el = document.getElementById("errorMsg");
+    el.textContent = "❌ " + msg; el.style.display = "block";
+    document.getElementById("successMsg").style.display = "none";
+    setTimeout(() => el.style.display = "none", 5000);
 }
 
 function showConfirm(message, onConfirm) {

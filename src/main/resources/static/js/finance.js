@@ -191,32 +191,26 @@ function loadFinance() {
 
 // ── APPROVE ───────────────────────────────────────────────────────
 function approveFinance(id, description) {
-    showConfirm(`Approve payment: "${description}"? This will lock the record.`, () => {
-        fetch(`/api/finance/${id}/approve`, { method: "PUT" })
-            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-            .then(() => { loadFinance(); showSuccess("Record approved and locked!"); })
-            .catch(() => showError("Failed to approve record."));
-    });
+    fetch(`/api/finance/${id}/approve`, { method: "PUT" })
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(() => { loadFinance(); showSuccess("Record approved and locked!"); })
+        .catch(() => showError("Failed to approve record."));
 }
 
 // ── UNLOCK ────────────────────────────────────────────────────────
 function unlockFinance(id, description) {
-    showConfirm(`Unlock "${description}"? This will set it back to Pending.`, () => {
-        fetch(`/api/finance/${id}/unlock`, { method: "PUT" })
-            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-            .then(() => { loadFinance(); showSuccess("Record unlocked and set to Pending."); })
-            .catch(() => showError("Failed to unlock record."));
-    });
+    fetch(`/api/finance/${id}/unlock`, { method: "PUT" })
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(() => { loadFinance(); showSuccess("Record unlocked and set to Pending."); })
+        .catch(() => showError("Failed to unlock record."));
 }
 
 // ── REFUND ────────────────────────────────────────────────────────
 function refundFinance(id, description) {
-    showConfirm(`Process refund for "${description}"? This action will be logged.`, () => {
-        fetch(`/api/finance/${id}/refund`, { method: "PUT" })
-            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-            .then(() => { loadFinance(); showSuccess("Refund processed successfully!"); })
-            .catch(() => showError("Failed to process refund."));
-    });
+    fetch(`/api/finance/${id}/refund`, { method: "PUT" })
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(() => { loadFinance(); showSuccess("Refund processed successfully!"); })
+        .catch(() => showError("Failed to process refund."));
 }
 
 // ── FORM SUBMIT ───────────────────────────────────────────────────

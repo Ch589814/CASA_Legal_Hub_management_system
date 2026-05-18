@@ -14,7 +14,8 @@
 
     <!-- Client Profile -->
     <div class="card">
-        <h2>&#128100; Client Profile</h2>
+        <h2>👤 Client Profile</h2>
+
         <div class="two-col">
             <div>
                 <div class="detail-row">
@@ -317,13 +318,13 @@ const CLIENT_ID = /*[[${client.id}]]*/ 0;
 
 function showSuccess(msg) {
     const el = document.getElementById("successMsg");
-    el.textContent = "OK " + msg; el.style.display = "block";
+    el.textContent = "✅ " + msg; el.style.display = "block";
     document.getElementById("errorMsg").style.display = "none";
     setTimeout(() => el.style.display = "none", 4000);
 }
 function showError(msg) {
     const el = document.getElementById("errorMsg");
-    el.textContent = "Error: " + msg; el.style.display = "block";
+    el.textContent = "❌ " + msg; el.style.display = "block";
 }
 
 // ── CASES ─────────────────────────────────────────────────

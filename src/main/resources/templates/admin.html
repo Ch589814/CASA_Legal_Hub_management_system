@@ -365,15 +365,6 @@ function showError(msg) {
 }
 
 function adminAction(id, action) {
-    const messages = {
-        unlock:  "Unlock this approved payment and set it back to Pending?",
-        refund:  "Process a refund for this payment? This will be logged.",
-        approve: "Approve this payment?",
-        pending: "Set this record back to Pending?",
-        overdue: "Mark this record as Overdue?"
-    };
-    if (!confirm(messages[action] || "Are you sure?")) return;
-
     const urlMap = {
         unlock:  `/api/finance/${id}/unlock`,
         refund:  `/api/finance/${id}/refund`,
@@ -389,13 +380,6 @@ function adminAction(id, action) {
 }
 
 function caseAction(id, action) {
-    const messages = {
-        close:   "Close this case?",
-        pending: "Set this case to Pending?",
-        won:     "Mark this case as Won?"
-    };
-    if (!confirm(messages[action] || "Are you sure?")) return;
-
     const statusMap = { close: "Closed", pending: "Pending", won: "Won" };
     fetch(`/api/cases/${id}/status`, {
         method: "PUT",
@@ -408,14 +392,6 @@ function caseAction(id, action) {
 }
 
 function staffAction(id, action) {
-    const messages = {
-        deactivate: "Deactivate this staff account?",
-        activate:   "Activate this staff account?",
-        promote:    "Promote this user to Admin?",
-        demote:     "Demote this Admin to Staff?"
-    };
-    if (!confirm(messages[action] || "Are you sure?")) return;
-
     fetch(`/api/users/${id}/${action}`, { method: "PUT" })
         .then(r => { if (!r.ok) throw new Error(); return r.json(); })
         .then(() => showSuccess("User updated successfully!"))

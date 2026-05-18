@@ -37,17 +37,6 @@ function setFieldError(field, msg) {
     if (err)   err.textContent = msg;
 }
 
-function showConfirm(message, onConfirm) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmOverlay").classList.add("show");
-    document.getElementById("confirmYes").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-        onConfirm();
-    };
-    document.getElementById("confirmNo").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-    };
-}
 
 // Block non-digit input on ID and phone fields as user types
 document.addEventListener("DOMContentLoaded", function() {
@@ -249,10 +238,8 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
 });
 
 function deleteClient(id) {
-    showConfirm("Delete this client? This cannot be undone.", () => {
-        fetch(`/api/clients/${id}`, { method: "DELETE" })
-            .then(() => { loadClients(); showSuccess("Client deleted successfully!"); });
-    });
+    fetch(`/api/clients/${id}`, { method: "DELETE" })
+        .then(() => { loadClients(); showSuccess("Client deleted successfully!"); });
 }
 
 function editClient(c) {

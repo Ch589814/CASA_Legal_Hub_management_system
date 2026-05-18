@@ -17,17 +17,6 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-function showConfirm(message, onConfirm) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmOverlay").classList.add("show");
-    document.getElementById("confirmYes").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-        onConfirm();
-    };
-    document.getElementById("confirmNo").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-    };
-}
 
 function makeCell(text) {
     const td = document.createElement("td");
@@ -198,10 +187,8 @@ function cancelEdit() {
 }
 
 function deleteCase(id) {
-    showConfirm("Delete this case? This cannot be undone.", () => {
-        fetch(`/api/cases/${id}`, { method: "DELETE" })
-            .then(() => { loadCases(); showSuccess("Case deleted!"); });
-    });
+    fetch(`/api/cases/${id}`, { method: "DELETE" })
+        .then(() => { loadCases(); showSuccess("Case deleted!"); });
 }
 
 function searchCases() {

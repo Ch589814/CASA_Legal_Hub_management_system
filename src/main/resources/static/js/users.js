@@ -25,17 +25,6 @@ function clearErrors() {
     });
 }
 
-function showConfirm(message, onConfirm) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmOverlay").classList.add("show");
-    document.getElementById("confirmYes").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-        onConfirm();
-    };
-    document.getElementById("confirmNo").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-    };
-}
 
 function makeBadge(text, cssClass) {
     const span = document.createElement("span");
@@ -163,10 +152,8 @@ function cancelEdit() {
 }
 
 function deleteUser(id) {
-    showConfirm("Delete this user? This cannot be undone.", () => {
-        fetch(`/api/users/${id}`, { method: "DELETE" })
-            .then(() => { loadUsers(); showSuccess("User deleted!"); });
-    });
+    fetch(`/api/users/${id}`, { method: "DELETE" })
+        .then(() => { loadUsers(); showSuccess("User deleted!"); });
 }
 
 loadUsers();

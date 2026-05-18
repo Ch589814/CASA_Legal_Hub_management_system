@@ -18,17 +18,6 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-function showConfirm(message, onConfirm) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmOverlay").classList.add("show");
-    document.getElementById("confirmYes").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-        onConfirm();
-    };
-    document.getElementById("confirmNo").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-    };
-}
 
 // Show/hide client field based on category
 function handleCategoryChange() {
@@ -250,10 +239,8 @@ function resetForm() {
 }
 
 function deleteDocument(id) {
-    showConfirm("Delete this document? This cannot be undone.", () => {
-        fetch(`/api/documents/${id}`, { method: "DELETE" })
-            .then(() => { loadDocuments(); showSuccess("Document deleted!"); });
-    });
+    fetch(`/api/documents/${id}`, { method: "DELETE" })
+        .then(() => { loadDocuments(); showSuccess("Document deleted!"); });
 }
 
 // Init

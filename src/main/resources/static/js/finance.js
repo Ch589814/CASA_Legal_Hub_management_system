@@ -17,17 +17,6 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-function showConfirm(message, onConfirm) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmOverlay").classList.add("show");
-    document.getElementById("confirmYes").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-        onConfirm();
-    };
-    document.getElementById("confirmNo").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-    };
-}
 
 function clearErrors() {
     ["financeDescription", "financeAmount", "financeAmountPaid"].forEach(f => {
@@ -318,10 +307,8 @@ function cancelEdit() {
 }
 
 function deleteFinance(id) {
-    showConfirm("Delete this finance record? This cannot be undone.", () => {
-        fetch(`/api/finance/${id}`, { method: "DELETE" })
-            .then(() => { loadFinance(); showSuccess("Record deleted!"); });
-    });
+    fetch(`/api/finance/${id}`, { method: "DELETE" })
+        .then(() => { loadFinance(); showSuccess("Record deleted!"); });
 }
 
 loadFinance();

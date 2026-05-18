@@ -178,14 +178,14 @@ function renderTable(data) {
             <td><strong>${sanitize(c.fullName)}</strong></td>
             <td>${sanitize(c.idNumber) || "-"}</td>
             <td>${sanitize(c.phone)}</td>
-            <td style="font-size:12px;">${address || "-"}</td>
+            <td style="font-size:12px; color:#666;">${address || "-"}</td>
             <td>${serviceBadge}</td>
             <td>${statusBadge}</td>
             <td>${sanitize(c.createdAt) || "-"}</td>
-            <td>
-                <a href="/clients/view/${c.id}"><button class="btn-view">👁 View</button></a>
-                <button class="btn-warning">✏️ Edit</button>
-                <button class="btn-delete" onclick="deleteClient(${c.id})">🗑 Delete</button>
+            <td style="text-align:right; white-space:nowrap;">
+                <a href="/clients/view/${c.id}" title="View Details"><button class="btn-view" style="padding:6px 10px;">👁</button></a>
+                <button class="btn-warning" title="Edit Client" style="padding:6px 10px;">✏️</button>
+                <button class="btn-delete" title="Delete Client" onclick="deleteClient(${c.id})" style="padding:6px 10px;">🗑</button>
             </td>`;
         tr.querySelector('.btn-warning').onclick = () => editClient(c);
         tbody.appendChild(tr);

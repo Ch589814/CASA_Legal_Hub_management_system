@@ -98,6 +98,8 @@ function renderTable(data) {
         tr.appendChild(makeCell(d.uploadDate));
 
         const actionTd = document.createElement("td");
+        actionTd.style.textAlign = "right";
+        actionTd.style.whiteSpace = "nowrap";
 
         // Only show View for files browser can display
         const viewable = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.txt'];
@@ -109,22 +111,25 @@ function renderTable(data) {
             viewBtn.href = `/api/documents/view/${d.id}`;
             viewBtn.target = "_blank";
             viewBtn.rel = "noopener noreferrer";
-            viewBtn.textContent = "👁 View";
-            viewBtn.style.cssText = "background:#3498db; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
+            viewBtn.title = "View File";
+            viewBtn.innerHTML = `<button class="btn-view" style="padding:6px 10px;">👁</button>`;
             actionTd.appendChild(viewBtn);
         }
 
         const downloadBtn = document.createElement("a");
         downloadBtn.href = `/api/documents/download/${d.id}`;
-        downloadBtn.textContent = "📥 Download";
-        downloadBtn.style.cssText = "background:#27ae60; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
+        downloadBtn.title = "Download File";
+        downloadBtn.innerHTML = `<button class="btn-view" style="background:#34495e; padding:6px 10px;">⬇️</button>`;
         actionTd.appendChild(downloadBtn);
 
         const delBtn = document.createElement("button");
         delBtn.className = "btn-delete";
-        delBtn.textContent = "🗑 Delete";
+        delBtn.style.padding = "6px 10px";
+        delBtn.title = "Delete Document";
+        delBtn.innerHTML = "🗑";
         delBtn.onclick = () => deleteDocument(d.id);
         actionTd.appendChild(delBtn);
+
         tr.appendChild(actionTd);
         tbody.appendChild(tr);
     });

@@ -16,54 +16,68 @@
         <h2>📄 Upload Document</h2>
 
         <form id="uploadForm">
+            <div class="two-col">
+                <div>
+                    <label for="docCategory">Document Category *</label>
+                    <select id="docCategory" onchange="handleCategoryChange()">
+                        <option value="Client Document">📋 Client Document</option>
+                        <option value="Case Document">📁 Case Document</option>
+                        <option value="Staff Resource">👤 Staff Resource</option>
+                    </select>
+                    <span class="hint">Staff Resource = internal documents not linked to any client or case</span>
 
-            <label>Document Category *</label>
-            <select id="docCategory" style="width:55%;" onchange="handleCategoryChange()">
-                <option value="Client Document">📋 Client Document</option>
-                <option value="Case Document">📁 Case Document</option>
-                <option value="Staff Resource">👤 Staff Resource</option>
-            </select>
-            <span class="hint">Staff Resource = internal documents not linked to any client or case</span>
+                    <div id="clientSection">
+                        <label for="docClientId">Client <span id="clientRequired">*</span></label>
+                        <select id="docClientId">
+                            <option value="">-- Select Client --</option>
+                            <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
+                        </select>
+                        <span class="field-error" id="err-docClientId"></span>
+                    </div>
+                </div>
+                <div>
+                    <label for="docFile">Select File *</label>
+                    <div style="position:relative;">
+                        <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" 
+                               style="padding:10px; border:2px dashed #cbd5e0; background:#f8fafc; cursor:pointer;">
+                    </div>
+                    <span class="field-error" id="err-docFile"></span>
+                    <span class="hint">Allowed: PDF, Word, Excel, Images, Text (max 20MB)</span>
 
-            <div id="clientSection">
-                <label>Client <span id="clientRequired">*</span></label>
-                <select id="docClientId" style="width:55%;">
-                    <option value="">-- Select Client --</option>
-                    <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.fullName}"></option>
-                </select>
-                <span class="field-error" id="err-docClientId"></span>
+                    <label for="docFileType">File Type</label>
+                    <select id="docFileType">
+                        <option>ID Document</option>
+                        <option>Court Order</option>
+                        <option>Contract</option>
+                        <option>Affidavit</option>
+                        <option>Invoice</option>
+                        <option>Legal Notice</option>
+                        <option>Policy Document</option>
+                        <option>Template</option>
+                        <option>Reference Material</option>
+                        <option>Other</option>
+                    </select>
+                </div>
             </div>
 
-            <label>Select File *</label>
-            <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt" style="width:55%; padding:8px; border:1px solid #ccc; border-radius:5px;">
-            <span class="field-error" id="err-docFile"></span>
-            <span style="font-size:11px; color:#95a5a6; display:block; margin-bottom:10px;">Allowed: PDF, Word, Excel, Images, Text (max 20MB)</span>
-
-            <label>File Type</label>
-            <select id="docFileType" style="width:55%;">
-                <option>ID Document</option>
-                <option>Court Order</option>
-                <option>Contract</option>
-                <option>Affidavit</option>
-                <option>Invoice</option>
-                <option>Legal Notice</option>
-                <option>Policy Document</option>
-                <option>Template</option>
-                <option>Reference Material</option>
-                <option>Other</option>
-            </select>
-
-            <label>Description (optional)</label>
-            <textarea id="docDescription" placeholder="Brief description of this document..." style="width:55%; height:70px;"></textarea>
+            <label for="docDescription">Description (optional)</label>
+            <textarea id="docDescription" placeholder="Brief description of this document..." style="height:80px;"></textarea>
 
             <br>
-            <button type="submit">📤 Save Document</button>
-            <button type="button" class="btn-cancel" onclick="resetForm()">✖ Cancel</button>
+            <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+                <button type="submit">📤 Save Document</button>
+                <button type="button" class="btn-cancel" onclick="resetForm()">✖ Cancel</button>
+            </div>
         </form>
     </div>
 
     <div class="card">
-        <h2>📂 All Documents</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+            <h2 style="margin:0; border-bottom:none; padding-bottom:0;">📂 All Documents</h2>
+            <input type="text" class="search-input" id="docSearch"
+                   placeholder="Search documents..."
+                   oninput="searchDocuments()" style="width:300px;">
+        </div>
 
         <div class="tabs">
             <div class="tab active" onclick="filterTab('all', this)">📂 All</div>
@@ -72,25 +86,23 @@
             <div class="tab" onclick="filterTab('Staff Resource', this)">👤 Staff Resources</div>
         </div>
 
-        <input type="text" class="search-input" id="docSearch"
-               placeholder="🔍 Search by file name, type, client or description..."
-               oninput="searchDocuments()" style="width:60%; margin-bottom:14px;">
-
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Category</th>
-                    <th>File Name</th>
-                    <th>Type</th>
-                    <th>Client</th>
-                    <th>Description</th>
-                    <th>Upload Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="documentTableBody"></tbody>
-        </table>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Category</th>
+                        <th>File Name</th>
+                        <th>Type</th>
+                        <th>Client</th>
+                        <th>Description</th>
+                        <th>Upload Date</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="documentTableBody"></tbody>
+            </table>
+        </div>
     </div>
 
 </div>

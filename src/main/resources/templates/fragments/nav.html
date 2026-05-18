@@ -3,25 +3,28 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <div th:fragment="navbar">
-    <header style="display:flex; align-items:center; justify-content:space-between; padding: 12px 30px; background:#2c3e50; color:white;">
-        <span style="font-size:20px; font-weight:bold;">⚖️ CASA Legal Hub</span>
-        <span style="font-size:13px; color:#bdc3c7;">
-            👤 <a th:href="@{/profile}" style="color:#bdc3c7; text-decoration:none;" sec:authentication="name">User</a>
-            &nbsp;|&nbsp;
+    <header style="display:flex; align-items:center; justify-content:space-between; padding: 12px 30px; background:#1a252f; color:white;">
+        <span style="font-size:20px; font-weight:bold; display:flex; align-items:center; gap:10px;">
+            <span style="background:#3498db; padding:5px 10px; border-radius:8px;">⚖️</span> 
+            CASA Legal Hub
+        </span>
+        <span style="font-size:13px; color:#bdc3c7; display:flex; align-items:center; gap:15px;">
+            <a th:href="@{/profile}" style="color:#bdc3c7; text-decoration:none; display:flex; align-items:center; gap:5px;" sec:authentication="name">User</a>
+            <span style="color:#34495e;">|</span>
             <form th:action="@{/logout}" method="post" style="display:inline;">
-                <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:13px; padding:0; font-weight:bold;">🚪 Logout</button>
+                <button type="submit" style="background:#e74c3c; border:none; color:white; cursor:pointer; font-size:12px; padding:5px 12px; font-weight:bold; border-radius:4px; box-shadow:none;">🚪 Logout</button>
             </form>
         </span>
     </header>
-    <nav style="background:#34495e; display:flex;">
-        <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">🏠 Dashboard</a>
-        <a th:href="@{/clients}" th:classappend="${activePage == 'clients'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">👥 Clients</a>
-        <a th:href="@{/cases}" th:classappend="${activePage == 'cases'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">📁 Cases</a>
-        <a th:href="@{/finance}" th:classappend="${activePage == 'finance'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">💰 Finance</a>
-        <a th:href="@{/documents}" th:classappend="${activePage == 'documents'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">📄 Documents</a>
-        <a th:href="@{/users}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'users'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">👤 Users</a>
-        <a th:href="@{/activity}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'activity'} ? 'active'" style="color:#ecf0f1; text-decoration:none; padding:12px 20px; display:block; font-size:14px;">📋 Activity Log</a>
-        <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'admin'} ? 'active'" style="color:#e74c3c; text-decoration:none; padding:12px 20px; display:block; font-size:14px; font-weight:bold;">⚙️ Admin Panel</a>
+    <nav style="background:#2c3e50; display:flex; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active'">🏠 Dashboard</a>
+        <a th:href="@{/clients}" th:classappend="${activePage == 'clients'} ? 'active'">👥 Clients</a>
+        <a th:href="@{/cases}" th:classappend="${activePage == 'cases'} ? 'active'">📁 Cases</a>
+        <a th:href="@{/finance}" th:classappend="${activePage == 'finance'} ? 'active'">💰 Finance</a>
+        <a th:href="@{/documents}" th:classappend="${activePage == 'documents'} ? 'active'">📄 Documents</a>
+        <a th:href="@{/users}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'users'} ? 'active'">👤 Users</a>
+        <a th:href="@{/activity}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'activity'} ? 'active'">📋 Activity Log</a>
+        <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'admin'} ? 'active'" style="color:#e74c3c; font-weight:bold;">⚙️ Admin Panel</a>
     </nav>
 </div>
 </body>

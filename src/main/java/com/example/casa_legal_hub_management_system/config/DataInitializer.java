@@ -18,18 +18,26 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        // Create default admin user if none exists
-        if (userRepository.findByRole("ADMIN").isEmpty()) {
-            User admin = new User();
+    public void run(String... args) {
+
+        // 👉 CHANGE THIS EMAIL TO YOUR REAL EMAIL
+        String adminEmail = "your-email@gmail.com";
+
+        User admin = userRepository.findByEmail(adminEmail).orElse(null);
+
+        if (admin == null) {
+            admin = new User();
+            admin.setEmail(adminEmail);
             admin.setFullName("System Administrator");
-            admin.setEmail("admin@casa.com");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRole("ADMIN");
-            admin.setStatus("Active");
-            
-            userRepository.save(admin);
-            System.out.println("Default admin user created: admin@casa.com / admin123");
         }
+
+        // Always ensure admin credentials are correct
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setRole("ADMIN");
+        admin.setStatus("Active");
+
+        userRepository.save(admin);
+
+        System.out.println("✅ ADMIN READY: " + adminEmail + " / admin123");
     }
 }

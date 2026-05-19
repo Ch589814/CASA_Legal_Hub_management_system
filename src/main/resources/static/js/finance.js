@@ -9,25 +9,24 @@ function sanitize(str) {
 function showSuccess(msg) {
     const el = document.getElementById("successMsg");
     el.textContent = "✅ " + msg; el.style.display = "block";
-    document.getElementById("errorMsg").style.display = "none";
     setTimeout(() => el.style.display = "none", 4000);
 }
 function showError(msg) {
     document.getElementById("errorMsg").textContent = "❌ " + msg;
     document.getElementById("errorMsg").style.display = "block";
+    setTimeout(() => document.getElementById("errorMsg").style.display = "none", 5000);
 }
 
-function clearErrors() {
-    ["financeDescription", "financeAmount", "financeAmountPaid"].forEach(f => {
-        const input = document.getElementById(f);
-        const err   = document.getElementById("err-" + f.replace("finance", "").toLowerCase());
-        if (input) input.classList.remove("error-field");
-        if (err)   err.textContent = "";
-    });
-    const clientErr = document.getElementById("err-client");
-    if (clientErr) clientErr.textContent = "";
-    document.getElementById("successMsg").style.display = "none";
-    document.getElementById("errorMsg").style.display = "none";
+function showConfirm(message, onConfirm) {
+    document.getElementById("confirmMessage").textContent = message;
+    document.getElementById("confirmOverlay").classList.add("show");
+    document.getElementById("confirmYes").onclick = () => {
+        document.getElementById("confirmOverlay").classList.remove("show");
+        onConfirm();
+    };
+    document.getElementById("confirmNo").onclick = () => {
+        document.getElementById("confirmOverlay").classList.remove("show");
+    };
 }
 
 function makeStatusBadge(status) {
@@ -80,14 +79,12 @@ function renderTable(data) {
         tr.appendChild(makeCell(f.serviceType || "-"));
         tr.appendChild(makeCell(formatRWF(f.amount)));
         tr.appendChild(makeCell(formatRWF(f.amountPaid)));
-
         const balance = (f.amount || 0) - (f.amountPaid || 0);
         const balTd = document.createElement("td");
         balTd.textContent = formatRWF(balance);
         balTd.style.color = balance > 0 ? "#e74c3c" : "#27ae60";
         balTd.style.fontWeight = "bold";
         tr.appendChild(balTd);
-
         tr.appendChild(makeCell(f.paymentMethod || "-"));
         tr.appendChild(makeCell(f.type));
 
@@ -101,7 +98,9 @@ function renderTable(data) {
         actionTd.style.whiteSpace = "nowrap";
 
         if (IS_ADMIN) {
+            // ── ADMIN actions ──────────────────────────────────────
             if (!isApproved && !isRefunded) {
+                // Approve button — for Pending/Overdue/Partial records
                 const approveBtn = document.createElement("button");
                 approveBtn.className = "btn-view";
                 approveBtn.textContent = "✅ Approve";
@@ -109,25 +108,29 @@ function renderTable(data) {
                 approveBtn.onclick = () => approveFinance(f.id, f.description);
                 actionTd.appendChild(approveBtn);
 
+                // Edit button
                 const editBtn = document.createElement("button");
                 editBtn.className = "btn-warning";
                 editBtn.textContent = "✏️ Edit";
                 editBtn.onclick = () => editFinance(f);
                 actionTd.appendChild(editBtn);
 
+                // Delete button
                 const delBtn = document.createElement("button");
                 delBtn.className = "btn-delete";
                 delBtn.textContent = "🗑 Delete";
-                delBtn.onclick = () => deleteFinance(f.id, f.description);
+                delBtn.onclick = () => deleteFinance(f.id);
                 actionTd.appendChild(delBtn);
 
             } else if (isApproved) {
+                // Unlock button — revert Approved back to Pending
                 const unlockBtn = document.createElement("button");
                 unlockBtn.className = "btn-warning";
                 unlockBtn.textContent = "🔓 Unlock";
                 unlockBtn.onclick = () => unlockFinance(f.id, f.description);
                 actionTd.appendChild(unlockBtn);
 
+                // Refund button — only on Approved records
                 if (f.type !== "Refund") {
                     const refundBtn = document.createElement("button");
                     refundBtn.className = "btn-delete";
@@ -145,6 +148,7 @@ function renderTable(data) {
             }
 
         } else {
+            // ── STAFF actions ──────────────────────────────────────
             if (isApproved) {
                 const lockSpan = document.createElement("span");
                 lockSpan.textContent = "🔒 Locked";
@@ -165,7 +169,7 @@ function renderTable(data) {
                 const delBtn = document.createElement("button");
                 delBtn.className = "btn-delete";
                 delBtn.textContent = "🗑 Delete";
-                delBtn.onclick = () => deleteFinance(f.id, f.description);
+                delBtn.onclick = () => deleteFinance(f.id);
                 actionTd.appendChild(delBtn);
             }
         }
@@ -181,77 +185,43 @@ function loadFinance() {
         .then(data => { if (data) renderTable(data); });
 }
 
-/**
- * Helper to show a confirmation dialog. 
- * Since script.js overrides window.confirm, we use it here or 
- * implement the modal logic if the UI components exist.
- */
-function showDeleteModal(title, message, onConfirm) {
-    // If a custom modal UI exists in finance.html, we would trigger it here.
-    // Based on the user's recent code, they expect this function to exist.
-    if (confirm(`${title}\n\n${message}`)) {
-        onConfirm();
-    }
-}
-
+// ── APPROVE ───────────────────────────────────────────────────────
 function approveFinance(id, description) {
-    showDeleteModal(
-        `Approve "${description}"?`,
-        "This will lock the record. Use Unlock to revert it later if needed.",
-        function() {
-            fetch(`/api/finance/${id}/approve`, { method: "PUT" })
-                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-                .then(() => { loadFinance(); showSuccess("Record approved and locked!"); })
-                .catch(() => showError("Failed to approve record."));
-        }
-    );
+    showConfirm(`Approve payment: "${description}"? This will lock the record.`, () => {
+        fetch(`/api/finance/${id}/approve`, { method: "PUT" })
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(() => { loadFinance(); showSuccess("Record approved and locked!"); })
+            .catch(() => showError("Failed to approve record."));
+    });
 }
 
+// ── UNLOCK ────────────────────────────────────────────────────────
 function unlockFinance(id, description) {
-    showDeleteModal(
-        `Unlock "${description}"?`,
-        "This will revert the record back to Pending status.",
-        function() {
-            fetch(`/api/finance/${id}/unlock`, { method: "PUT" })
-                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-                .then(() => { loadFinance(); showSuccess("Record unlocked and set to Pending."); })
-                .catch(() => showError("Failed to unlock record."));
-        }
-    );
+    showConfirm(`Unlock "${description}"? This will set it back to Pending.`, () => {
+        fetch(`/api/finance/${id}/unlock`, { method: "PUT" })
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(() => { loadFinance(); showSuccess("Record unlocked and set to Pending."); })
+            .catch(() => showError("Failed to unlock record."));
+    });
 }
 
+// ── REFUND ────────────────────────────────────────────────────────
 function refundFinance(id, description) {
-    showDeleteModal(
-        `Process refund for "${description}"?`,
-        "This will mark the record as Refunded. This action cannot be undone.",
-        function() {
-            fetch(`/api/finance/${id}/refund`, { method: "PUT" })
-                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-                .then(() => { loadFinance(); showSuccess("Refund processed successfully!"); })
-                .catch(() => showError("Failed to process refund."));
-        }
-    );
+    showConfirm(`Process refund for "${description}"? This action will be logged.`, () => {
+        fetch(`/api/finance/${id}/refund`, { method: "PUT" })
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(() => { loadFinance(); showSuccess("Refund processed successfully!"); })
+            .catch(() => showError("Failed to process refund."));
+    });
 }
 
+// ── FORM SUBMIT ───────────────────────────────────────────────────
 document.getElementById("financeForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    clearErrors();
     const clientId = document.getElementById("clientId").value;
-    if (!clientId) {
-        showError("Please select a client.");
-        document.getElementById("clientId").classList.add("error-field");
-        const clientErr = document.getElementById("err-client");
-        if (clientErr) clientErr.textContent = "Please select a client.";
-        return;
-    }
+    if (!clientId) { showError("Please select a client."); return; }
     const description = document.getElementById("financeDescription").value.trim();
-    if (!description) {
-        showError("Description is required.");
-        document.getElementById("financeDescription").classList.add("error-field");
-        const descErr = document.getElementById("err-description");
-        if (descErr) descErr.textContent = "Description is required.";
-        return;
-    }
+    if (!description) { showError("Description is required."); return; }
 
     const payload = {
         description:   description,
@@ -269,22 +239,7 @@ document.getElementById("financeForm").addEventListener("submit", function(e) {
     const method = editingId ? "PUT" : "POST";
 
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        .then(r => {
-            if (!r.ok) return r.json().then(body => {
-                (body.errors || []).forEach(err => {
-                    const parts = err.split(":");
-                    if (parts.length >= 2) {
-                        const field = parts[0].trim();
-                        const input = document.getElementById(field);
-                        const span  = document.getElementById("err-" + (field === "client" ? "client" : field.replace("finance", "").toLowerCase()));
-                        if (input) input.classList.add("error-field");
-                        if (span)  span.textContent = parts.slice(1).join(":").trim();
-                    }
-                });
-                throw new Error("validation");
-            });
-            return r.json();
-        })
+        .then(r => { if (!r.ok) { showError("Failed to save record."); throw new Error(); } return r.json(); })
         .then(() => {
             loadFinance();
             document.getElementById("financeForm").reset();
@@ -292,7 +247,7 @@ document.getElementById("financeForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "Record updated!" : "Record saved!");
             editingId = null;
         })
-        .catch(err => { if (err.message !== "validation") showError("Failed to save record."); });
+        .catch(() => {});
 });
 
 function editFinance(f) {
@@ -315,18 +270,13 @@ function cancelEdit() {
     editingId = null;
     document.getElementById("financeForm").reset();
     document.getElementById("formTitle").textContent = "💰 Add Finance Record";
-    clearErrors();
 }
 
-function deleteFinance(id, description) {
-    showDeleteModal(
-        `Delete "${description || 'this record'}"?`,
-        "This will permanently remove this finance record. This action cannot be undone.",
-        function() {
-            fetch(`/api/finance/${id}`, { method: "DELETE" })
-                .then(() => { loadFinance(); showSuccess("Record deleted!"); });
-        }
-    );
+function deleteFinance(id) {
+    showConfirm("Delete this finance record? This cannot be undone.", () => {
+        fetch(`/api/finance/${id}`, { method: "DELETE" })
+            .then(() => { loadFinance(); showSuccess("Record deleted!"); });
+    });
 }
 
 loadFinance();

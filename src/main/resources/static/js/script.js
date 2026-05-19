@@ -1,9 +1,3 @@
-// Override window.confirm to always return true, effectively disabling all confirmation dialogs.
-// This is a global change and will affect all confirm dialogs in the application.
-window.confirm = function() {
-    return true;
-};
-
 let editingId = null;
 
 function sanitize(str) {
@@ -19,21 +13,19 @@ function showSuccess(msg) {
     setTimeout(() => el.style.display = "none", 4000);
 }
 function showError(msg) {
-    document.getElementById("errorMsg").textContent = "❌ " + msg;
-    document.getElementById("errorMsg").style.display = "block";
+    const el = document.getElementById("errorMsg");
+    el.textContent = "❌ " + msg; el.style.display = "block";
 }
 
-function clearErrors() {
-    const FIELDS = ["fullName", "idNumber", "email", "phone", "province", "district", "sector", "cell", "village"];
+const FIELDS = ["fullName", "idNumber", "email", "phone", "province", "district", "sector", "cell", "village"];
+
+function clearFieldErrors() {
     FIELDS.forEach(f => {
         const input = document.getElementById(f);
         const err   = document.getElementById("err-" + f);
         if (input) input.classList.remove("error-field");
         if (err)   err.textContent = "";
     });
-    // Ensure success/error messages are hidden when clearing form
-    document.getElementById("successMsg").style.display = "none";
-    document.getElementById("errorMsg").style.display = "none";
 }
 
 function setFieldError(field, msg) {
@@ -43,6 +35,17 @@ function setFieldError(field, msg) {
     if (err)   err.textContent = msg;
 }
 
+function showConfirm(message, onConfirm) {
+    document.getElementById("confirmMessage").textContent = message;
+    document.getElementById("confirmOverlay").classList.add("show");
+    document.getElementById("confirmYes").onclick = () => {
+        document.getElementById("confirmOverlay").classList.remove("show");
+        onConfirm();
+    };
+    document.getElementById("confirmNo").onclick = () => {
+        document.getElementById("confirmOverlay").classList.remove("show");
+    };
+}
 
 // Block non-digit input on ID and phone fields as user types
 document.addEventListener("DOMContentLoaded", function() {
@@ -69,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function() {
 function validateForm() {
     let valid = true;
     let firstErrorField = null;
-    clearErrors();
+    clearFieldErrors();
 
     const fullName = document.getElementById("fullName").value.trim();
     if (!fullName) {
@@ -173,14 +176,14 @@ function renderTable(data) {
             <td><strong>${sanitize(c.fullName)}</strong></td>
             <td>${sanitize(c.idNumber) || "-"}</td>
             <td>${sanitize(c.phone)}</td>
-            <td style="font-size:12px; color:#666;">${address || "-"}</td>
+            <td style="font-size:12px;">${address || "-"}</td>
             <td>${serviceBadge}</td>
             <td>${statusBadge}</td>
             <td>${sanitize(c.createdAt) || "-"}</td>
-            <td style="text-align:right; white-space:nowrap;">
-                <a href="/clients/view/${c.id}" title="View Details"><button class="btn-view" style="padding:6px 10px;">👁</button></a>
-                <button class="btn-warning" title="Edit Client" style="padding:6px 10px;">✏️</button>
-                <button class="btn-delete" title="Delete Client" onclick="deleteClient(${c.id})" style="padding:6px 10px;">🗑</button>
+            <td>
+                <a href="/clients/view/${c.id}"><button class="btn-view">👁 View</button></a>
+                <button class="btn-warning">✏️ Edit</button>
+                <button class="btn-delete" onclick="deleteClient(${c.id})">🗑 Delete</button>
             </td>`;
         tr.querySelector('.btn-warning').onclick = () => editClient(c);
         tbody.appendChild(tr);
@@ -244,8 +247,10 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
 });
 
 function deleteClient(id) {
-    fetch(`/api/clients/${id}`, { method: "DELETE" })
-        .then(() => { loadClients(); showSuccess("Client deleted successfully!"); });
+    showConfirm("Delete this client? This cannot be undone.", () => {
+        fetch(`/api/clients/${id}`, { method: "DELETE" })
+            .then(() => { loadClients(); showSuccess("Client deleted successfully!"); });
+    });
 }
 
 function editClient(c) {
@@ -270,7 +275,7 @@ function editClient(c) {
 function cancelEdit() {
     document.getElementById("clientForm").reset();
     document.getElementById("formTitle").textContent = "➕ Register New Client";
-    clearErrors();
+    clearFieldErrors();
     editingId = null;
 }
 

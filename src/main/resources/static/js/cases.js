@@ -17,23 +17,22 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
+function showConfirm(message, onConfirm) {
+    document.getElementById("confirmMessage").textContent = message;
+    document.getElementById("confirmOverlay").classList.add("show");
+    document.getElementById("confirmYes").onclick = () => {
+        document.getElementById("confirmOverlay").classList.remove("show");
+        onConfirm();
+    };
+    document.getElementById("confirmNo").onclick = () => {
+        document.getElementById("confirmOverlay").classList.remove("show");
+    };
+}
+
 function makeCell(text) {
     const td = document.createElement("td");
     td.textContent = text ?? "-";
     return td;
-}
-
-function clearErrors() {
-    ["clientId", "caseNumber", "caseServiceType"].forEach(f => {
-        const input = document.getElementById(f);
-        const err   = document.getElementById("err-" + f.replace("case", "").charAt(0).toLowerCase() + f.replace("case", "").slice(1));
-        if (input) input.classList.remove("error-field");
-        if (err)   err.textContent = "";
-    });
-    const clientErr = document.getElementById("err-client");
-    if (clientErr) clientErr.textContent = "";
-    document.getElementById("successMsg").style.display = "none";
-    document.getElementById("errorMsg").style.display = "none";
 }
 
 function makeStatusBadge(status) {
@@ -89,7 +88,6 @@ function renderTable(data) {
         tr.appendChild(makeCell(c.courtDate));
 
         const actionTd = document.createElement("td");
-
         const editBtn = document.createElement("button");
         editBtn.className = "btn-warning";
         editBtn.textContent = "✏️ Edit";
@@ -98,7 +96,7 @@ function renderTable(data) {
         const delBtn = document.createElement("button");
         delBtn.className = "btn-delete";
         delBtn.textContent = "🗑 Delete";
-        delBtn.onclick = () => deleteCase(c.id, c.caseNumber);
+        delBtn.onclick = () => deleteCase(c.id);
 
         actionTd.appendChild(editBtn);
         actionTd.appendChild(delBtn);
@@ -115,15 +113,8 @@ function loadCases() {
 
 document.getElementById("caseForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    clearErrors();
     const clientId = document.getElementById("clientId").value;
-    if (!clientId) {
-        showError("Please select a client.");
-        document.getElementById("clientId").classList.add("error-field");
-        const clientErr = document.getElementById("err-client");
-        if (clientErr) clientErr.textContent = "Please select a client.";
-        return;
-    }
+    if (!clientId) { showError("Please select a client."); return; }
     const payload = {
         caseNumber:  document.getElementById("caseNumber").value,
         serviceType: document.getElementById("caseServiceType") ? document.getElementById("caseServiceType").value : "",
@@ -137,22 +128,7 @@ document.getElementById("caseForm").addEventListener("submit", function(e) {
     const url    = editingId ? `/api/cases/${editingId}` : "/api/cases";
     const method = editingId ? "PUT" : "POST";
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        .then(r => {
-            if (!r.ok) return r.json().then(body => {
-                (body.errors || []).forEach(err => {
-                    const parts = err.split(":");
-                    if (parts.length >= 2) {
-                        const field = parts[0].trim();
-                        const input = document.getElementById(field);
-                        const span  = document.getElementById("err-" + (field === "client" ? "client" : field.replace("case", "").charAt(0).toLowerCase() + field.replace("case", "").slice(1)));
-                        if (input) input.classList.add("error-field");
-                        if (span)  span.textContent = parts.slice(1).join(":").trim();
-                    }
-                });
-                throw new Error("validation");
-            });
-            return r.json();
-        })
+        .then(r => { if (!r.ok) { showError("Failed to save case."); throw new Error(); } return r.json(); })
         .then(() => {
             loadCases();
             document.getElementById("caseForm").reset();
@@ -160,7 +136,7 @@ document.getElementById("caseForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "Case updated!" : "Case saved!");
             editingId = null;
         })
-        .catch(err => { if (err.message !== "validation") showError("Failed to save case."); });
+        .catch(() => {});
 });
 
 function editCase(id, caseNumber, serviceType, caseType, status, priority, courtDate, description, clientId) {
@@ -181,18 +157,13 @@ function cancelEdit() {
     editingId = null;
     document.getElementById("caseForm").reset();
     document.getElementById("formTitle").textContent = "Add New Case";
-    clearErrors();
 }
 
-function deleteCase(id, caseNumber) {
-    showDeleteModal(
-        `Delete case "${caseNumber || id}"?`,
-        "This will permanently remove the case and all its related records. This action cannot be undone.",
-        function() {
-            fetch(`/api/cases/${id}`, { method: "DELETE" })
-                .then(() => { loadCases(); showSuccess("Case deleted!"); });
-        }
-    );
+function deleteCase(id) {
+    showConfirm("Delete this case? This cannot be undone.", () => {
+        fetch(`/api/cases/${id}`, { method: "DELETE" })
+            .then(() => { loadCases(); showSuccess("Case deleted!"); });
+    });
 }
 
 function searchCases() {

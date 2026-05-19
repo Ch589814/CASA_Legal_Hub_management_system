@@ -1,3 +1,9 @@
+// Override window.confirm to always return true, effectively disabling all confirmation dialogs.
+// This is a global change and will affect all confirm dialogs in the application.
+window.confirm = function() {
+    return true;
+};
+
 let editingId = null;
 
 function sanitize(str) {

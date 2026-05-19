@@ -25,7 +25,6 @@ function clearErrors() {
     });
 }
 
-
 function makeBadge(text, cssClass) {
     const span = document.createElement("span");
     span.className = "badge " + cssClass;
@@ -73,6 +72,7 @@ function renderTable(data) {
         tr.appendChild(makeCell(u.createdAt));
 
         const actionTd = document.createElement("td");
+
         const editBtn = document.createElement("button");
         editBtn.className = "btn-warning";
         editBtn.textContent = "✏️ Edit";
@@ -81,7 +81,7 @@ function renderTable(data) {
         const delBtn = document.createElement("button");
         delBtn.className = "btn-delete";
         delBtn.textContent = "🗑 Delete";
-        delBtn.onclick = () => deleteUser(u.id);
+        delBtn.onclick = () => deleteUser(u.id, u.fullName);
 
         actionTd.appendChild(editBtn);
         actionTd.appendChild(delBtn);
@@ -151,9 +151,15 @@ function cancelEdit() {
     clearErrors();
 }
 
-function deleteUser(id) {
-    fetch(`/api/users/${id}`, { method: "DELETE" })
-        .then(() => { loadUsers(); showSuccess("User deleted!"); });
+function deleteUser(id, fullName) {
+    showDeleteModal(
+        `Delete user "${fullName || 'this user'}"?`,
+        "This will permanently remove the user account. They will no longer be able to log in.",
+        function() {
+            fetch(`/api/users/${id}`, { method: "DELETE" })
+                .then(() => { loadUsers(); showSuccess("User deleted!"); });
+        }
+    );
 }
 
 loadUsers();

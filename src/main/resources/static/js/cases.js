@@ -17,7 +17,6 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-
 function makeCell(text) {
     const td = document.createElement("td");
     td.textContent = text ?? "-";
@@ -31,10 +30,8 @@ function clearErrors() {
         if (input) input.classList.remove("error-field");
         if (err)   err.textContent = "";
     });
-    // Special handling for client error which doesn't follow the pattern exactly
     const clientErr = document.getElementById("err-client");
     if (clientErr) clientErr.textContent = "";
-
     document.getElementById("successMsg").style.display = "none";
     document.getElementById("errorMsg").style.display = "none";
 }
@@ -92,6 +89,7 @@ function renderTable(data) {
         tr.appendChild(makeCell(c.courtDate));
 
         const actionTd = document.createElement("td");
+
         const editBtn = document.createElement("button");
         editBtn.className = "btn-warning";
         editBtn.textContent = "✏️ Edit";
@@ -100,7 +98,7 @@ function renderTable(data) {
         const delBtn = document.createElement("button");
         delBtn.className = "btn-delete";
         delBtn.textContent = "🗑 Delete";
-        delBtn.onclick = () => deleteCase(c.id);
+        delBtn.onclick = () => deleteCase(c.id, c.caseNumber);
 
         actionTd.appendChild(editBtn);
         actionTd.appendChild(delBtn);
@@ -186,9 +184,15 @@ function cancelEdit() {
     clearErrors();
 }
 
-function deleteCase(id) {
-    fetch(`/api/cases/${id}`, { method: "DELETE" })
-        .then(() => { loadCases(); showSuccess("Case deleted!"); });
+function deleteCase(id, caseNumber) {
+    showDeleteModal(
+        `Delete case "${caseNumber || id}"?`,
+        "This will permanently remove the case and all its related records. This action cannot be undone.",
+        function() {
+            fetch(`/api/cases/${id}`, { method: "DELETE" })
+                .then(() => { loadCases(); showSuccess("Case deleted!"); });
+        }
+    );
 }
 
 function searchCases() {

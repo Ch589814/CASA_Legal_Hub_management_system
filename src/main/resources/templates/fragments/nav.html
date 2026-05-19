@@ -5,7 +5,7 @@
 <div th:fragment="navbar">
     <header style="display:flex; align-items:center; justify-content:space-between; padding: 12px 30px; background:#1a252f; color:white;">
         <span style="font-size:20px; font-weight:bold; display:flex; align-items:center; gap:10px;">
-            <span style="background:#3498db; padding:5px 10px; border-radius:8px;">⚖️</span> 
+            <span style="background:#3498db; padding:5px 10px; border-radius:8px;">⚖️</span>
             CASA Legal Hub
         </span>
         <span style="font-size:13px; color:#bdc3c7; display:flex; align-items:center; gap:15px;">
@@ -17,15 +17,120 @@
         </span>
     </header>
     <nav style="background:#2c3e50; display:flex; border-bottom:1px solid rgba(255,255,255,0.05);">
-        <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active'">🏠 Dashboard</a>
-        <a th:href="@{/clients}" th:classappend="${activePage == 'clients'} ? 'active'">👥 Clients</a>
-        <a th:href="@{/cases}" th:classappend="${activePage == 'cases'} ? 'active'">📁 Cases</a>
-        <a th:href="@{/finance}" th:classappend="${activePage == 'finance'} ? 'active'">💰 Finance</a>
-        <a th:href="@{/documents}" th:classappend="${activePage == 'documents'} ? 'active'">📄 Documents</a>
-        <a th:href="@{/users}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'users'} ? 'active'">👤 Users</a>
-        <a th:href="@{/activity}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'activity'} ? 'active'">📋 Activity Log</a>
-        <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'admin'} ? 'active'" style="color:#e74c3c; font-weight:bold;">⚙️ Admin Panel</a>
+        <a th:href="@{/dashboard}"  th:classappend="${activePage == 'dashboard'}  ? 'active'">🏠 Dashboard</a>
+        <a th:href="@{/clients}"    th:classappend="${activePage == 'clients'}    ? 'active'">👥 Clients</a>
+        <a th:href="@{/cases}"      th:classappend="${activePage == 'cases'}      ? 'active'">📁 Cases</a>
+        <a th:href="@{/finance}"    th:classappend="${activePage == 'finance'}    ? 'active'">💰 Finance</a>
+        <a th:href="@{/documents}"  th:classappend="${activePage == 'documents'}  ? 'active'">📄 Documents</a>
+        <a th:href="@{/users}"      sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'users'}    ? 'active'">👤 Users</a>
+        <a th:href="@{/activity}"   sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'activity'} ? 'active'">📋 Activity Log</a>
+        <a th:href="@{/admin}"      sec:authorize="hasRole('ADMIN')" th:classappend="${activePage == 'admin'}    ? 'active'" style="color:#e74c3c; font-weight:bold;">⚙️ Admin Panel</a>
     </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SHARED DELETE CONFIRMATION MODAL
+         Used by ALL pages: cases, clients, documents, finance, users
+         Hidden by default — triggered only by showDeleteModal()
+    ════════════════════════════════════════════════════════════════ -->
+    <div id="casaDeleteModal" style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;">
+
+        <div style="
+            background: #fff;
+            border-radius: 16px;
+            padding: 36px 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: casaModalPop 0.2s ease;">
+
+            <div style="font-size: 52px; margin-bottom: 14px;">🗑️</div>
+            <h3 id="casaModalTitle" style="margin: 0 0 10px; color: #2c3e50; font-size: 20px; font-weight: 700;"></h3>
+            <p  id="casaModalMsg"   style="margin: 0 0 28px; color: #7f8c8d; font-size: 14px; line-height: 1.6;"></p>
+
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="casaModalCancel"
+                        onclick="hideCasaDeleteModal()"
+                        style="padding: 11px 30px;
+                           border: 2px solid #ddd;
+                           border-radius: 8px;
+                           background: #fff;
+                           color: #555;
+                           font-size: 15px;
+                           font-weight: 600;
+                           cursor: pointer;
+                           transition: all 0.2s;">
+                    Cancel
+                </button>
+                <button id="casaModalConfirm"
+                        style="padding: 11px 30px;
+                           border: none;
+                           border-radius: 8px;
+                           background: linear-gradient(135deg, #e74c3c, #c0392b);
+                           color: #fff;
+                           font-size: 15px;
+                           font-weight: 600;
+                           cursor: pointer;
+                           transition: all 0.2s;">
+                    🗑 Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes casaModalPop {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+        #casaModalCancel:hover  { background: #f5f5f5 !important; border-color: #bbb !important; }
+        #casaModalConfirm:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    </style>
+
+    <script>
+        // Close modal when clicking the dark overlay
+        document.getElementById('casaDeleteModal').addEventListener('click', function(e) {
+            if (e.target === this) hideCasaDeleteModal();
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') hideCasaDeleteModal();
+        });
+
+        function hideCasaDeleteModal() {
+            document.getElementById('casaDeleteModal').style.display = 'none';
+        }
+
+        /**
+         * Call this from any page JS to show the delete confirmation.
+         * @param {string}   title    - Bold heading, e.g. 'Delete this case?'
+         * @param {string}   message  - Subtext description
+         * @param {Function} onConfirm - Callback fired when user clicks Delete
+         */
+        function showDeleteModal(title, message, onConfirm) {
+            document.getElementById('casaModalTitle').textContent = title;
+            document.getElementById('casaModalMsg').textContent   = message;
+            document.getElementById('casaDeleteModal').style.display = 'flex';
+
+            // Swap out confirm button to avoid stacking old listeners
+            const old = document.getElementById('casaModalConfirm');
+            const btn = old.cloneNode(true);
+            old.parentNode.replaceChild(btn, old);
+            btn.addEventListener('click', function() {
+                hideCasaDeleteModal();
+                onConfirm();
+            });
+        }
+    </script>
 </div>
 </body>
 </html>

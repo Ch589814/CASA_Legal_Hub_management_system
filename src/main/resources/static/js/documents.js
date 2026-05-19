@@ -18,8 +18,6 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-
-// Show/hide client field based on category
 function handleCategoryChange() {
     const category = document.getElementById("docCategory").value;
     const clientSection = document.getElementById("clientSection");
@@ -90,7 +88,6 @@ function renderTable(data) {
         actionTd.style.textAlign = "right";
         actionTd.style.whiteSpace = "nowrap";
 
-        // Only show View for files browser can display
         const viewable = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.txt'];
         const ext = (d.fileName || '').toLowerCase().substring((d.fileName || '').lastIndexOf('.'));
         const canView = viewable.includes(ext);
@@ -116,7 +113,7 @@ function renderTable(data) {
         delBtn.style.padding = "6px 10px";
         delBtn.title = "Delete Document";
         delBtn.innerHTML = "🗑";
-        delBtn.onclick = () => deleteDocument(d.id);
+        delBtn.onclick = () => deleteDocument(d.id, d.fileName);
         actionTd.appendChild(delBtn);
 
         tr.appendChild(actionTd);
@@ -138,26 +135,21 @@ function searchDocuments() {
 function applyFilters() {
     const keyword = (document.getElementById("docSearch").value || "").toLowerCase().trim();
     let filtered = allDocuments;
-
-    // Apply category filter
     if (activeCategory !== "all") {
         filtered = filtered.filter(d => d.category === activeCategory);
     }
-
-    // Apply keyword search across fileName, fileType, description, client name
     if (keyword) {
         filtered = filtered.filter(d => {
-            const name        = (d.fileName    || "").toLowerCase();
-            const type        = (d.fileType    || "").toLowerCase();
-            const desc        = (d.description || "").toLowerCase();
-            const client      = (d.client ? d.client.fullName : "").toLowerCase();
-            const category    = (d.category   || "").toLowerCase();
+            const name     = (d.fileName    || "").toLowerCase();
+            const type     = (d.fileType    || "").toLowerCase();
+            const desc     = (d.description || "").toLowerCase();
+            const client   = (d.client ? d.client.fullName : "").toLowerCase();
+            const category = (d.category   || "").toLowerCase();
             return name.includes(keyword) || type.includes(keyword) ||
-                   desc.includes(keyword) || client.includes(keyword) ||
-                   category.includes(keyword);
+                desc.includes(keyword) || client.includes(keyword) ||
+                category.includes(keyword);
         });
     }
-
     renderTable(filtered);
 }
 
@@ -165,10 +157,7 @@ function loadDocuments() {
     fetch("/api/documents")
         .then(r => { if (!r.ok) { showError("Failed to load documents."); return []; } return r.json(); })
         .then(data => {
-            if (data) {
-                allDocuments = data;
-                applyFilters();
-            }
+            if (data) { allDocuments = data; applyFilters(); }
         });
 }
 
@@ -204,10 +193,7 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     formData.append("description", document.getElementById("docDescription").value.trim());
     if (clientId) formData.append("clientId", clientId);
 
-    fetch("/api/documents", {
-        method: "POST",
-        body: formData
-    })
+    fetch("/api/documents", { method: "POST", body: formData })
         .then(r => {
             if (!r.ok) return r.json().then(body => {
                 (body.errors || []).forEach(err => {
@@ -238,11 +224,16 @@ function resetForm() {
     clearErrors();
 }
 
-function deleteDocument(id) {
-    fetch(`/api/documents/${id}`, { method: "DELETE" })
-        .then(() => { loadDocuments(); showSuccess("Document deleted!"); });
+function deleteDocument(id, fileName) {
+    showDeleteModal(
+        `Delete "${fileName || 'this document'}"?`,
+        "This will permanently remove the document from the system. This action cannot be undone.",
+        function() {
+            fetch(`/api/documents/${id}`, { method: "DELETE" })
+                .then(() => { loadDocuments(); showSuccess("Document deleted!"); });
+        }
+    );
 }
 
-// Init
 handleCategoryChange();
 loadDocuments();

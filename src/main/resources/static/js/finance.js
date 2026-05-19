@@ -17,7 +17,6 @@ function showError(msg) {
     document.getElementById("errorMsg").style.display = "block";
 }
 
-
 function clearErrors() {
     ["financeDescription", "financeAmount", "financeAmountPaid"].forEach(f => {
         const input = document.getElementById(f);
@@ -25,10 +24,8 @@ function clearErrors() {
         if (input) input.classList.remove("error-field");
         if (err)   err.textContent = "";
     });
-    // Special handling for client error
     const clientErr = document.getElementById("err-client");
     if (clientErr) clientErr.textContent = "";
-
     document.getElementById("successMsg").style.display = "none";
     document.getElementById("errorMsg").style.display = "none";
 }
@@ -83,12 +80,14 @@ function renderTable(data) {
         tr.appendChild(makeCell(f.serviceType || "-"));
         tr.appendChild(makeCell(formatRWF(f.amount)));
         tr.appendChild(makeCell(formatRWF(f.amountPaid)));
+
         const balance = (f.amount || 0) - (f.amountPaid || 0);
         const balTd = document.createElement("td");
         balTd.textContent = formatRWF(balance);
         balTd.style.color = balance > 0 ? "#e74c3c" : "#27ae60";
         balTd.style.fontWeight = "bold";
         tr.appendChild(balTd);
+
         tr.appendChild(makeCell(f.paymentMethod || "-"));
         tr.appendChild(makeCell(f.type));
 
@@ -102,9 +101,7 @@ function renderTable(data) {
         actionTd.style.whiteSpace = "nowrap";
 
         if (IS_ADMIN) {
-            // ── ADMIN actions ──────────────────────────────────────
             if (!isApproved && !isRefunded) {
-                // Approve button — for Pending/Overdue/Partial records
                 const approveBtn = document.createElement("button");
                 approveBtn.className = "btn-view";
                 approveBtn.textContent = "✅ Approve";
@@ -112,29 +109,25 @@ function renderTable(data) {
                 approveBtn.onclick = () => approveFinance(f.id, f.description);
                 actionTd.appendChild(approveBtn);
 
-                // Edit button
                 const editBtn = document.createElement("button");
                 editBtn.className = "btn-warning";
                 editBtn.textContent = "✏️ Edit";
                 editBtn.onclick = () => editFinance(f);
                 actionTd.appendChild(editBtn);
 
-                // Delete button
                 const delBtn = document.createElement("button");
                 delBtn.className = "btn-delete";
                 delBtn.textContent = "🗑 Delete";
-                delBtn.onclick = () => deleteFinance(f.id);
+                delBtn.onclick = () => deleteFinance(f.id, f.description);
                 actionTd.appendChild(delBtn);
 
             } else if (isApproved) {
-                // Unlock button — revert Approved back to Pending
                 const unlockBtn = document.createElement("button");
                 unlockBtn.className = "btn-warning";
                 unlockBtn.textContent = "🔓 Unlock";
                 unlockBtn.onclick = () => unlockFinance(f.id, f.description);
                 actionTd.appendChild(unlockBtn);
 
-                // Refund button — only on Approved records
                 if (f.type !== "Refund") {
                     const refundBtn = document.createElement("button");
                     refundBtn.className = "btn-delete";
@@ -152,7 +145,6 @@ function renderTable(data) {
             }
 
         } else {
-            // ── STAFF actions ──────────────────────────────────────
             if (isApproved) {
                 const lockSpan = document.createElement("span");
                 lockSpan.textContent = "🔒 Locked";
@@ -173,7 +165,7 @@ function renderTable(data) {
                 const delBtn = document.createElement("button");
                 delBtn.className = "btn-delete";
                 delBtn.textContent = "🗑 Delete";
-                delBtn.onclick = () => deleteFinance(f.id);
+                delBtn.onclick = () => deleteFinance(f.id, f.description);
                 actionTd.appendChild(delBtn);
             }
         }
@@ -189,31 +181,58 @@ function loadFinance() {
         .then(data => { if (data) renderTable(data); });
 }
 
-// ── APPROVE ───────────────────────────────────────────────────────
+/**
+ * Helper to show a confirmation dialog. 
+ * Since script.js overrides window.confirm, we use it here or 
+ * implement the modal logic if the UI components exist.
+ */
+function showDeleteModal(title, message, onConfirm) {
+    // If a custom modal UI exists in finance.html, we would trigger it here.
+    // Based on the user's recent code, they expect this function to exist.
+    if (confirm(`${title}\n\n${message}`)) {
+        onConfirm();
+    }
+}
+
 function approveFinance(id, description) {
-    fetch(`/api/finance/${id}/approve`, { method: "PUT" })
-        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(() => { loadFinance(); showSuccess("Record approved and locked!"); })
-        .catch(() => showError("Failed to approve record."));
+    showDeleteModal(
+        `Approve "${description}"?`,
+        "This will lock the record. Use Unlock to revert it later if needed.",
+        function() {
+            fetch(`/api/finance/${id}/approve`, { method: "PUT" })
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                .then(() => { loadFinance(); showSuccess("Record approved and locked!"); })
+                .catch(() => showError("Failed to approve record."));
+        }
+    );
 }
 
-// ── UNLOCK ────────────────────────────────────────────────────────
 function unlockFinance(id, description) {
-    fetch(`/api/finance/${id}/unlock`, { method: "PUT" })
-        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(() => { loadFinance(); showSuccess("Record unlocked and set to Pending."); })
-        .catch(() => showError("Failed to unlock record."));
+    showDeleteModal(
+        `Unlock "${description}"?`,
+        "This will revert the record back to Pending status.",
+        function() {
+            fetch(`/api/finance/${id}/unlock`, { method: "PUT" })
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                .then(() => { loadFinance(); showSuccess("Record unlocked and set to Pending."); })
+                .catch(() => showError("Failed to unlock record."));
+        }
+    );
 }
 
-// ── REFUND ────────────────────────────────────────────────────────
 function refundFinance(id, description) {
-    fetch(`/api/finance/${id}/refund`, { method: "PUT" })
-        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(() => { loadFinance(); showSuccess("Refund processed successfully!"); })
-        .catch(() => showError("Failed to process refund."));
+    showDeleteModal(
+        `Process refund for "${description}"?`,
+        "This will mark the record as Refunded. This action cannot be undone.",
+        function() {
+            fetch(`/api/finance/${id}/refund`, { method: "PUT" })
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                .then(() => { loadFinance(); showSuccess("Refund processed successfully!"); })
+                .catch(() => showError("Failed to process refund."));
+        }
+    );
 }
 
-// ── FORM SUBMIT ───────────────────────────────────────────────────
 document.getElementById("financeForm").addEventListener("submit", function(e) {
     e.preventDefault();
     clearErrors();
@@ -221,7 +240,6 @@ document.getElementById("financeForm").addEventListener("submit", function(e) {
     if (!clientId) {
         showError("Please select a client.");
         document.getElementById("clientId").classList.add("error-field");
-        // No err-client span in finance.html yet, but we add it to be consistent
         const clientErr = document.getElementById("err-client");
         if (clientErr) clientErr.textContent = "Please select a client.";
         return;
@@ -300,9 +318,15 @@ function cancelEdit() {
     clearErrors();
 }
 
-function deleteFinance(id) {
-    fetch(`/api/finance/${id}`, { method: "DELETE" })
-        .then(() => { loadFinance(); showSuccess("Record deleted!"); });
+function deleteFinance(id, description) {
+    showDeleteModal(
+        `Delete "${description || 'this record'}"?`,
+        "This will permanently remove this finance record. This action cannot be undone.",
+        function() {
+            fetch(`/api/finance/${id}`, { method: "DELETE" })
+                .then(() => { loadFinance(); showSuccess("Record deleted!"); });
+        }
+    );
 }
 
 loadFinance();

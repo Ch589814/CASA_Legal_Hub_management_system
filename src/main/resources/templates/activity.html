@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Activity Log - CASA Legal Hub</title>
+
+    <!-- CSS LINK -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
 
     <style>
@@ -88,17 +91,47 @@
             color: #7f8c8d;
             margin-top: 3px;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table th {
+            background: #f4f4f4;
+        }
+
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <div th:replace="~{fragments/nav :: navbar}"></div>
 
 <div class="container">
 
     <!-- STATS -->
     <div class="stats-row">
+
         <div class="stat-mini">
             <div class="stat-mini-num" th:text="${#lists.size(logs)}">0</div>
             <div class="stat-mini-label">📋 Total Actions</div>
@@ -124,6 +157,7 @@
             </div>
             <div class="stat-mini-label">📁 Case Actions</div>
         </div>
+
     </div>
 
     <!-- CARD -->
@@ -141,11 +175,11 @@
 
             <select id="filterModule" onchange="filterLogs()">
                 <option value="">All Modules</option>
-                <option>CLIENTS</option>
-                <option>CASES</option>
-                <option>FINANCE</option>
-                <option>DOCUMENTS</option>
-                <option>AUTH</option>
+                <option value="CLIENTS">CLIENTS</option>
+                <option value="CASES">CASES</option>
+                <option value="FINANCE">FINANCE</option>
+                <option value="DOCUMENTS">DOCUMENTS</option>
+                <option value="AUTH">AUTH</option>
             </select>
 
             <select id="filterStaff" onchange="filterLogs()">
@@ -156,7 +190,7 @@
                 </option>
             </select>
 
-            <!-- ONLY THIS BUTTON MATTERS (Clear filters) -->
+            <!-- CLEAR BUTTON -->
             <button type="button"
                     class="btn-cancel"
                     onclick="clearFilters()">
@@ -185,27 +219,21 @@
 
             <tr th:each="log, s : ${logs}">
                 <td th:text="${s.count}"></td>
-
-                <td><strong th:text="${log.staffName}"></strong></td>
-
+                <td th:text="${log.staffName}"></td>
                 <td th:text="${log.staffEmail}"></td>
 
                 <td>
                     <span th:text="${log.action}"
-                          th:classappend="'log-action action-' + ${log.action}">
+                          th:class="'log-action action-' + ${log.action}">
                     </span>
                 </td>
 
                 <td>
-                    <span class="module-badge"
-                          th:text="${log.module}">
-                    </span>
+                    <span class="module-badge" th:text="${log.module}"></span>
                 </td>
 
                 <td th:text="${log.details}"></td>
-
                 <td th:text="${log.ipAddress}"></td>
-
                 <td th:text="${log.timestamp}"></td>
             </tr>
 
@@ -216,10 +244,10 @@
             </tr>
 
             </tbody>
+
         </table>
 
     </div>
-
 </div>
 
 <!-- JAVASCRIPT -->

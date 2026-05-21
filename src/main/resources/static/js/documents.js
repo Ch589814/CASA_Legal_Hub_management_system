@@ -3,12 +3,6 @@ let activeCategory = 'all';
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    function sanitize(str) {
-        const d = document.createElement('div');
-        d.textContent = str ?? '';
-        return d.innerHTML;
-    }
-
     function showSuccess(msg) {
         const el = document.getElementById("successMsg");
         if (!el) return;
@@ -32,30 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => el.style.display = "none", 5000);
     }
 
-    function showConfirm(message, onConfirm) {
-        const msgEl = document.getElementById("confirmMessage");
-        const overlay = document.getElementById("confirmOverlay");
-        const yesBtn = document.getElementById("confirmYes");
-        const noBtn = document.getElementById("confirmNo");
-
-        if (!msgEl || !overlay || !yesBtn || !noBtn) {
-            console.error("Confirm modal elements missing in HTML");
-            return;
-        }
-
-        msgEl.textContent = message;
-        overlay.classList.add("show");
-
-        yesBtn.onclick = () => {
-            overlay.classList.remove("show");
-            onConfirm();
-        };
-
-        noBtn.onclick = () => {
-            overlay.classList.remove("show");
-        };
-    }
-
     function handleCategoryChange() {
         const category = document.getElementById("docCategory");
         const clientSection = document.getElementById("clientSection");
@@ -74,22 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
             clientSection.style.pointerEvents = "auto";
             clientRequired.textContent = "*";
         }
-    }
-
-    function clearErrors() {
-        ["docFile", "docClientId"].forEach(f => {
-            const el = document.getElementById(f);
-            if (el) el.classList.remove("error-field");
-
-            const err = document.getElementById("err-" + f);
-            if (err) err.textContent = "";
-        });
-
-        const s = document.getElementById("successMsg");
-        const e = document.getElementById("errorMsg");
-
-        if (s) s.style.display = "none";
-        if (e) e.style.display = "none";
     }
 
     function makeCategoryBadge(category) {
@@ -160,9 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
             delBtn.className = "btn-delete";
             delBtn.textContent = "🗑 Delete";
 
-            delBtn.onclick = () => {
-                deleteDocument(d.id);
-            };
+            delBtn.onclick = () => deleteDocument(d.id);
 
             actionTd.appendChild(delBtn);
             tr.appendChild(actionTd);
@@ -202,19 +154,18 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(() => showError("Failed to load documents"));
     }
 
+    // ✅ FINAL DELETE (NO MODAL)
     function deleteDocument(id) {
-        showConfirm("Are you sure you want to delete this document?", () => {
-            fetch(`/api/documents/${id}`, { method: "DELETE" })
-                .then(r => {
-                    if (!r.ok) throw new Error();
-                    showSuccess("Document deleted!");
-                    loadDocuments();
-                })
-                .catch(() => showError("Failed to delete document"));
-        });
+        fetch(`/api/documents/${id}`, { method: "DELETE" })
+            .then(r => {
+                if (!r.ok) throw new Error();
+                showSuccess("Document deleted!");
+                loadDocuments();
+            })
+            .catch(() => showError("Failed to delete document"));
     }
 
-    // Expose functions globally (important for HTML onclick/tab usage)
+    // Expose functions globally
     window.filterTab = function (category, tabEl) {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         tabEl.classList.add("active");

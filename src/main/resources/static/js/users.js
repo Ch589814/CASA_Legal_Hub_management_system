@@ -163,10 +163,9 @@ function cancelEdit() {
 }
 
 function deleteUser(id) {
-    showConfirm("Delete this user? This cannot be undone.", () => {
-        fetch(`/api/users/${id}`, { method: "DELETE" })
-            .then(() => { loadUsers(); showSuccess("User deleted!"); });
-    });
+    fetch(`/api/users/${id}`, { method: "DELETE" })
+        .then(() => { loadUsers(); showSuccess("User deleted!"); })
+        .catch(() => showError("Failed to delete user."));
 }
 
 loadUsers();

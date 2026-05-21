@@ -273,10 +273,9 @@ function cancelEdit() {
 }
 
 function deleteFinance(id) {
-    showConfirm("Delete this finance record? This cannot be undone.", () => {
-        fetch(`/api/finance/${id}`, { method: "DELETE" })
-            .then(() => { loadFinance(); showSuccess("Record deleted!"); });
-    });
+    fetch(`/api/finance/${id}`, { method: "DELETE" })
+        .then(() => { loadFinance(); showSuccess("Record deleted!"); })
+        .catch(() => showError("Failed to delete finance record."));
 }
 
 loadFinance();

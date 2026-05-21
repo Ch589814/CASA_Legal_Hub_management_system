@@ -48,6 +48,18 @@ function handleCategoryChange() {
     }
 }
 
+function clearErrors() {
+    const FIELDS = ["docFile", "docClientId"];
+    FIELDS.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.classList.remove("error-field");
+        const err = document.getElementById("err-" + f);
+        if (err) err.textContent = "";
+    });
+    document.getElementById("successMsg").style.display = "none";
+    document.getElementById("errorMsg").style.display = "none";
+}
+
 function makeCategoryBadge(category) {
     const td = document.createElement("td");
     const span = document.createElement("span");
@@ -169,6 +181,7 @@ function loadDocuments() {
 
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    clearErrors(); // Added this line
 
     const category = document.getElementById("docCategory").value;
     const clientId = document.getElementById("docClientId").value;
@@ -215,10 +228,9 @@ function resetForm() {
 }
 
 function deleteDocument(id) {
-    showConfirm("Delete this document? This cannot be undone.", () => {
-        fetch(`/api/documents/${id}`, { method: "DELETE" })
-            .then(() => { loadDocuments(); showSuccess("Document deleted!"); });
-    });
+    fetch(`/api/documents/${id}`, { method: "DELETE" })
+        .then(() => { loadDocuments(); showSuccess("Document deleted!"); })
+        .catch(() => showError("Failed to delete document."));
 }
 
 // Init

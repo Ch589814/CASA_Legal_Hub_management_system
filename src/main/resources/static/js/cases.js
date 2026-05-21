@@ -160,10 +160,9 @@ function cancelEdit() {
 }
 
 function deleteCase(id) {
-    showConfirm("Delete this case? This cannot be undone.", () => {
-        fetch(`/api/cases/${id}`, { method: "DELETE" })
-            .then(() => { loadCases(); showSuccess("Case deleted!"); });
-    });
+    fetch(`/api/cases/${id}`, { method: "DELETE" })
+        .then(() => { loadCases(); showSuccess("Case deleted!"); })
+        .catch(() => showError("Failed to delete case."));
 }
 
 function searchCases() {

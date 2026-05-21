@@ -4,7 +4,7 @@
     <title>Login - CASA Legal Hub</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
-        body { margin:0; padding:0; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; display:flex; flex-direction:column; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin:0; padding:0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height:100vh; display:flex; flex-direction:column; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .auth-wrapper { flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
         .auth-box { background:white; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.2); padding:50px; width:100%; max-width:450px; position:relative; overflow:hidden; }
         .auth-box::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,#667eea,#764ba2); }
@@ -43,10 +43,10 @@
         <div class="auth-sub">Welcome back! Sign in to your account</div>
 
         <div th:if="${error}" class="alert-error">
-            <strong>❌ Access Denied!</strong> <span th:text="${error}"></span>
+            <strong> Access Denied!</strong> <span th:text="${error}"></span>
         </div>
         <div th:if="${success}" class="alert-success">
-            <strong>✅ Success!</strong> <span th:text="${success}"></span>
+            <strong> Success!</strong> <span th:text="${success}"></span>
         </div>
         <div th:if="${logout}" class="alert-success">
             <strong>👋 Goodbye!</strong> <span th:text="${logout}"></span>

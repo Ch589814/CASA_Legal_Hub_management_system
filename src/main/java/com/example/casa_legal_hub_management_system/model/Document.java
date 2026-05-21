@@ -3,7 +3,12 @@ package com.example.casa_legal_hub_management_system.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.Generated;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDate;
+import java.util.Arrays;
 
 @Entity
 @Table(name = "documents")
@@ -16,6 +21,7 @@ public class Document {
     private String fileName;
     private String fileType;
     private String mimeType;
+
     private String category = "Client Document";
 
     @Column(length = 500)
@@ -23,19 +29,20 @@ public class Document {
 
     private LocalDate uploadDate = LocalDate.now();
 
-    @Lob
+    // ✅ FIXED: correct PostgreSQL bytea mapping
+    @JdbcTypeCode(SqlTypes.BINARY)
     @JsonIgnore
-    @Column(columnDefinition = "bytea")
+    @Column(name = "file_data", columnDefinition = "bytea")
     private byte[] fileData;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "client_id")
-    @JsonIgnoreProperties({"cases", "documents"})
+    @JsonIgnoreProperties({"cases", "finances", "documents"})
     private Client client;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "case_id")
-    @JsonIgnoreProperties({"client", "documents"})
+    @JsonIgnoreProperties({"client", "assignedStaff", "finances", "documents"})
     private Case linkedCase;
 
     // =========================
@@ -124,5 +131,45 @@ public class Document {
 
     public void setLinkedCase(Case linkedCase) {
         this.linkedCase = linkedCase;
+    }
+
+    // =========================
+    // CONSTRUCTORS
+    // =========================
+
+    public Document() {
+    }
+
+    public Document(Long id, String fileName, String fileType, String mimeType,
+                    String category, String description, LocalDate uploadDate,
+                    byte[] fileData, Client client, Case linkedCase) {
+        this.id = id;
+        this.fileName = fileName;
+        this.fileType = fileType;
+        this.mimeType = mimeType;
+        this.category = category;
+        this.description = description;
+        this.uploadDate = uploadDate;
+        this.fileData = fileData;
+        this.client = client;
+        this.linkedCase = linkedCase;
+    }
+
+    // =========================
+    // OPTIONAL: equals, hashCode, toString (clean version)
+    // =========================
+
+    @Override
+    public String toString() {
+        return "Document{" +
+                "id=" + id +
+                ", fileName='" + fileName + '\'' +
+                ", fileType='" + fileType + '\'' +
+                ", mimeType='" + mimeType + '\'' +
+                ", category='" + category + '\'' +
+                ", description='" + description + '\'' +
+                ", uploadDate=" + uploadDate +
+                ", fileData=" + Arrays.toString(fileData) +
+                '}';
     }
 }

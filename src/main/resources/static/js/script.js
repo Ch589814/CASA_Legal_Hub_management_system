@@ -35,6 +35,7 @@ function setFieldError(field, msg) {
     if (err)   err.textContent = msg;
 }
 
+// Keep showConfirm for now, but delete functions will bypass it.
 function showConfirm(message, onConfirm) {
     document.getElementById("confirmMessage").textContent = message;
     document.getElementById("confirmOverlay").classList.add("show");
@@ -247,10 +248,10 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
 });
 
 function deleteClient(id) {
-    showConfirm("Delete this client? This cannot be undone.", () => {
-        fetch(`/api/clients/${id}`, { method: "DELETE" })
-            .then(() => { loadClients(); showSuccess("Client deleted successfully!"); });
-    });
+    // Directly call the fetch request, bypassing the showConfirm dialog
+    fetch(`/api/clients/${id}`, { method: "DELETE" })
+        .then(() => { loadClients(); showSuccess("Client deleted successfully!"); })
+        .catch(() => showError("Failed to delete client."));
 }
 
 function editClient(c) {

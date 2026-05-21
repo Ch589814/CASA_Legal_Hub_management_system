@@ -244,14 +244,20 @@ document.getElementById("clientForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "Client updated successfully!" : "Client registered successfully!");
             editingId = null;
         })
-        .catch(err => { if (err.message !== "validation" && err.message !== "duplicate") showError("Something went wrong."); });
+        .catch(err => {
+            console.error("Client form submission error:", err); // Added console.error
+            if (err.message !== "validation" && err.message !== "duplicate") showError("Something went wrong.");
+        });
 });
 
 function deleteClient(id) {
     // Directly call the fetch request, bypassing the showConfirm dialog
     fetch(`/api/clients/${id}`, { method: "DELETE" })
         .then(() => { loadClients(); showSuccess("Client deleted successfully!"); })
-        .catch(() => showError("Failed to delete client."));
+        .catch(err => {
+            console.error("Delete client error:", err); // Added console.error
+            showError("Failed to delete client.");
+        });
 }
 
 function editClient(c) {

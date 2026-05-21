@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -21,7 +22,7 @@ public class DocumentController {
     private final ClientRepository clientRepository;
 
     public DocumentController(DocumentRepository documentRepository,
-                               ClientRepository clientRepository) {
+                              ClientRepository clientRepository) {
         this.documentRepository = documentRepository;
         this.clientRepository = clientRepository;
     }
@@ -67,7 +68,13 @@ public class DocumentController {
                 clientRepository.findById(clientId).ifPresent(doc::setClient);
             }
 
-            return ResponseEntity.ok(documentRepository.save(doc));
+            Document saved = documentRepository.save(doc);
+            return ResponseEntity.ok(Map.of(
+                    "id",       saved.getId(),
+                    "fileName", saved.getFileName() != null ? saved.getFileName() : "",
+                    "category", saved.getCategory() != null ? saved.getCategory() : "",
+                    "fileType", saved.getFileType() != null ? saved.getFileType() : ""
+            ));
 
         } catch (IOException e) {
             return ResponseEntity.internalServerError()
@@ -94,7 +101,6 @@ public class DocumentController {
     public ResponseEntity<byte[]> viewDocument(@PathVariable Long id) {
         return documentRepository.findById(id).map(doc -> {
             String mimeType = detectMimeType(doc.getFileName());
-            // Override stored mimeType with detected one for accuracy
             if (doc.getMimeType() != null && !doc.getMimeType().equals("application/octet-stream")) {
                 mimeType = doc.getMimeType();
             }

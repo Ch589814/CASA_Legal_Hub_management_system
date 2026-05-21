@@ -154,11 +154,11 @@ function applyFilters() {
     // Apply keyword search across fileName, fileType, description, client name
     if (keyword) {
         filtered = filtered.filter(d => {
-            const name        = (d.fileName    || "").toLowerCase();
-            const type        = (d.fileType    || "").toLowerCase();
-            const desc        = (d.description || "").toLowerCase();
-            const client      = (d.client ? d.client.fullName : "").toLowerCase();
-            const category    = (d.category   || "").toLowerCase();
+            const name     = (d.fileName    || "").toLowerCase();
+            const type     = (d.fileType    || "").toLowerCase();
+            const desc     = (d.description || "").toLowerCase();
+            const client   = (d.client ? d.client.fullName : "").toLowerCase();
+            const category = (d.category   || "").toLowerCase();
             return name.includes(keyword) || type.includes(keyword) ||
                 desc.includes(keyword) || client.includes(keyword) ||
                 category.includes(keyword);
@@ -170,18 +170,23 @@ function applyFilters() {
 
 function loadDocuments() {
     fetch("/api/documents")
-        .then(r => { if (!r.ok) { showError("Failed to load documents."); return []; } return r.json(); })
+        .then(r => {
+            if (!r.ok) { showError("Failed to load documents."); return []; }
+            return r.json();
+        })
         .then(data => {
             if (data) {
                 allDocuments = data;
                 applyFilters();
             }
-        });
+        })
+        // FIX: was missing — network errors on load now show a message
+        .catch(() => showError("Could not connect to server. Please refresh."));
 }
 
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    clearErrors(); // Added this line
+    clearErrors();
 
     const category = document.getElementById("docCategory").value;
     const clientId = document.getElementById("docClientId").value;
@@ -202,6 +207,11 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     }
     document.getElementById("docClientId").classList.remove("error-field");
 
+    // Disable button to prevent double-submit
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Uploading...";
+
     const formData = new FormData();
     formData.append("file",        fileInput.files[0]);
     formData.append("category",    category);
@@ -213,13 +223,28 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
         method: "POST",
         body: formData
     })
-        .then(r => { if (!r.ok) { showError("Failed to upload file. Please try again."); throw new Error(); } return r.json(); })
+        .then(r => {
+            if (!r.ok) {
+                // Try to get a descriptive error from the server body
+                return r.text().then(text => {
+                    throw new Error(text || "Server returned an error.");
+                });
+            }
+            return r.json();
+        })
         .then(() => {
             loadDocuments();
             resetForm();
             showSuccess("Document uploaded successfully!");
         })
-        .catch(() => {});
+        // FIX: was .catch(() => {}) — errors were silently swallowed
+        .catch(err => {
+            showError(err.message || "Failed to upload file. Please try again.");
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "📤 Save Document";
+        });
 });
 
 function resetForm() {
@@ -228,9 +253,15 @@ function resetForm() {
 }
 
 function deleteDocument(id) {
-    fetch(`/api/documents/${id}`, { method: "DELETE" })
-        .then(() => { loadDocuments(); showSuccess("Document deleted!"); })
-        .catch(() => showError("Failed to delete document."));
+    showConfirm("Are you sure you want to delete this document?", () => {
+        fetch(`/api/documents/${id}`, { method: "DELETE" })
+            .then(r => {
+                if (!r.ok) throw new Error();
+                loadDocuments();
+                showSuccess("Document deleted!");
+            })
+            .catch(() => showError("Failed to delete document."));
+    });
 }
 
 // Init

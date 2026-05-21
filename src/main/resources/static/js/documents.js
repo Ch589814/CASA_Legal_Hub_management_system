@@ -1,264 +1,243 @@
 let allDocuments = [];
 let activeCategory = 'all';
 
-function sanitize(str) {
-    const d = document.createElement('div');
-    d.textContent = str ?? '';
-    return d.innerHTML;
-}
+document.addEventListener("DOMContentLoaded", function () {
 
-function showSuccess(msg) {
-    const el = document.getElementById("successMsg");
-    el.textContent = "✅ " + msg; el.style.display = "block";
-    document.getElementById("errorMsg").style.display = "none";
-    setTimeout(() => el.style.display = "none", 4000);
-}
-function showError(msg) {
-    const el = document.getElementById("errorMsg");
-    el.textContent = "❌ " + msg; el.style.display = "block";
-    setTimeout(() => el.style.display = "none", 5000);
-}
-
-function showConfirm(message, onConfirm) {
-    document.getElementById("confirmMessage").textContent = message;
-    document.getElementById("confirmOverlay").classList.add("show");
-    document.getElementById("confirmYes").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-        onConfirm();
-    };
-    document.getElementById("confirmNo").onclick = () => {
-        document.getElementById("confirmOverlay").classList.remove("show");
-    };
-}
-
-function handleCategoryChange() {
-    const category = document.getElementById("docCategory").value;
-    const clientSection = document.getElementById("clientSection");
-    const clientRequired = document.getElementById("clientRequired");
-    if (category === "Staff Resource") {
-        clientSection.style.opacity = "0.4";
-        clientSection.style.pointerEvents = "none";
-        clientRequired.textContent = "(optional)";
-        document.getElementById("docClientId").value = "";
-    } else {
-        clientSection.style.opacity = "1";
-        clientSection.style.pointerEvents = "auto";
-        clientRequired.textContent = "*";
+    function sanitize(str) {
+        const d = document.createElement('div');
+        d.textContent = str ?? '';
+        return d.innerHTML;
     }
-}
 
-function clearErrors() {
-    const FIELDS = ["docFile", "docClientId"];
-    FIELDS.forEach(f => {
-        const el = document.getElementById(f);
-        if (el) el.classList.remove("error-field");
-        const err = document.getElementById("err-" + f);
-        if (err) err.textContent = "";
-    });
-    document.getElementById("successMsg").style.display = "none";
-    document.getElementById("errorMsg").style.display = "none";
-}
+    function showSuccess(msg) {
+        const el = document.getElementById("successMsg");
+        if (!el) return;
 
-function makeCategoryBadge(category) {
-    const td = document.createElement("td");
-    const span = document.createElement("span");
-    span.className = "category-badge";
-    if (category === "Client Document") { span.classList.add("cat-client"); span.textContent = "📋 Client"; }
-    else if (category === "Case Document") { span.classList.add("cat-case"); span.textContent = "📁 Case"; }
-    else { span.classList.add("cat-staff"); span.textContent = "👤 Staff"; }
-    td.appendChild(span);
-    return td;
-}
+        el.textContent = "✅ " + msg;
+        el.style.display = "block";
 
-function makeCell(text) {
-    const td = document.createElement("td");
-    td.textContent = text ?? "-";
-    return td;
-}
+        const err = document.getElementById("errorMsg");
+        if (err) err.style.display = "none";
 
-function renderTable(data) {
-    const tbody = document.getElementById("documentTableBody");
-    tbody.innerHTML = "";
-    if (!data.length) {
-        const tr = document.createElement("tr");
+        setTimeout(() => el.style.display = "none", 4000);
+    }
+
+    function showError(msg) {
+        const el = document.getElementById("errorMsg");
+        if (!el) return;
+
+        el.textContent = "❌ " + msg;
+        el.style.display = "block";
+
+        setTimeout(() => el.style.display = "none", 5000);
+    }
+
+    function showConfirm(message, onConfirm) {
+        const msgEl = document.getElementById("confirmMessage");
+        const overlay = document.getElementById("confirmOverlay");
+        const yesBtn = document.getElementById("confirmYes");
+        const noBtn = document.getElementById("confirmNo");
+
+        if (!msgEl || !overlay || !yesBtn || !noBtn) {
+            console.error("Confirm modal elements missing in HTML");
+            return;
+        }
+
+        msgEl.textContent = message;
+        overlay.classList.add("show");
+
+        yesBtn.onclick = () => {
+            overlay.classList.remove("show");
+            onConfirm();
+        };
+
+        noBtn.onclick = () => {
+            overlay.classList.remove("show");
+        };
+    }
+
+    function handleCategoryChange() {
+        const category = document.getElementById("docCategory");
+        const clientSection = document.getElementById("clientSection");
+        const clientRequired = document.getElementById("clientRequired");
+        const clientInput = document.getElementById("docClientId");
+
+        if (!category || !clientSection || !clientRequired || !clientInput) return;
+
+        if (category.value === "Staff Resource") {
+            clientSection.style.opacity = "0.4";
+            clientSection.style.pointerEvents = "none";
+            clientRequired.textContent = "(optional)";
+            clientInput.value = "";
+        } else {
+            clientSection.style.opacity = "1";
+            clientSection.style.pointerEvents = "auto";
+            clientRequired.textContent = "*";
+        }
+    }
+
+    function clearErrors() {
+        ["docFile", "docClientId"].forEach(f => {
+            const el = document.getElementById(f);
+            if (el) el.classList.remove("error-field");
+
+            const err = document.getElementById("err-" + f);
+            if (err) err.textContent = "";
+        });
+
+        const s = document.getElementById("successMsg");
+        const e = document.getElementById("errorMsg");
+
+        if (s) s.style.display = "none";
+        if (e) e.style.display = "none";
+    }
+
+    function makeCategoryBadge(category) {
         const td = document.createElement("td");
-        td.colSpan = 8; td.style.textAlign = "center"; td.style.color = "#999";
-        td.textContent = "No documents found.";
-        tr.appendChild(td); tbody.appendChild(tr);
-        return;
-    }
-    data.forEach((d, i) => {
-        const tr = document.createElement("tr");
-        tr.appendChild(makeCell(i + 1));
-        tr.appendChild(makeCategoryBadge(d.category));
-        tr.appendChild(makeCell(d.fileName));
-        tr.appendChild(makeCell(d.fileType));
-        tr.appendChild(makeCell(d.client ? d.client.fullName : "-"));
-        tr.appendChild(makeCell(d.description));
-        tr.appendChild(makeCell(d.uploadDate));
+        const span = document.createElement("span");
+        span.className = "category-badge";
 
-        const actionTd = document.createElement("td");
-
-        const viewable = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.txt'];
-        const ext = (d.fileName || '').toLowerCase().substring((d.fileName || '').lastIndexOf('.'));
-        const canView = viewable.includes(ext);
-
-        if (canView) {
-            const viewBtn = document.createElement("a");
-            viewBtn.href = `/api/documents/view/${d.id}`;
-            viewBtn.target = "_blank";
-            viewBtn.rel = "noopener noreferrer";
-            viewBtn.textContent = "👁 View";
-            viewBtn.style.cssText = "background:#3498db; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
-            actionTd.appendChild(viewBtn);
+        if (category === "Client Document") {
+            span.classList.add("cat-client");
+            span.textContent = "📋 Client";
+        } else if (category === "Case Document") {
+            span.classList.add("cat-case");
+            span.textContent = "📁 Case";
+        } else {
+            span.classList.add("cat-staff");
+            span.textContent = "👤 Staff";
         }
 
-        const downloadBtn = document.createElement("a");
-        downloadBtn.href = `/api/documents/download/${d.id}`;
-        downloadBtn.textContent = "📥 Download";
-        downloadBtn.style.cssText = "background:#27ae60; color:white; padding:5px 10px; border-radius:4px; text-decoration:none; font-size:12px; margin-right:6px;";
-        actionTd.appendChild(downloadBtn);
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "btn-delete";
-        delBtn.textContent = "🗑 Delete";
-        delBtn.onclick = () => deleteDocument(d.id);
-        actionTd.appendChild(delBtn);
-        tr.appendChild(actionTd);
-        tbody.appendChild(tr);
-    });
-}
-
-function filterTab(category, tabEl) {
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    tabEl.classList.add("active");
-    activeCategory = category;
-    applyFilters();
-}
-
-function searchDocuments() {
-    applyFilters();
-}
-
-function applyFilters() {
-    const keyword = (document.getElementById("docSearch").value || "").toLowerCase().trim();
-    let filtered = allDocuments;
-
-    if (activeCategory !== "all") {
-        filtered = filtered.filter(d => d.category === activeCategory);
+        td.appendChild(span);
+        return td;
     }
 
-    if (keyword) {
-        filtered = filtered.filter(d => {
-            const name     = (d.fileName    || "").toLowerCase();
-            const type     = (d.fileType    || "").toLowerCase();
-            const desc     = (d.description || "").toLowerCase();
-            const client   = (d.client ? d.client.fullName : "").toLowerCase();
-            const category = (d.category   || "").toLowerCase();
-            return name.includes(keyword) || type.includes(keyword) ||
-                desc.includes(keyword) || client.includes(keyword) ||
-                category.includes(keyword);
+    function makeCell(text) {
+        const td = document.createElement("td");
+        td.textContent = text ?? "-";
+        return td;
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById("documentTableBody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        if (!data.length) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 8;
+            td.style.textAlign = "center";
+            td.style.color = "#999";
+            td.textContent = "No documents found.";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+        }
+
+        data.forEach((d, i) => {
+            const tr = document.createElement("tr");
+
+            tr.appendChild(makeCell(i + 1));
+            tr.appendChild(makeCategoryBadge(d.category));
+            tr.appendChild(makeCell(d.fileName));
+            tr.appendChild(makeCell(d.fileType));
+            tr.appendChild(makeCell(d.client ? d.client.fullName : "-"));
+            tr.appendChild(makeCell(d.description));
+            tr.appendChild(makeCell(d.uploadDate));
+
+            const actionTd = document.createElement("td");
+
+            const downloadBtn = document.createElement("a");
+            downloadBtn.href = `/api/documents/download/${d.id}`;
+            downloadBtn.textContent = "📥 Download";
+            downloadBtn.style.cssText =
+                "background:#27ae60;color:white;padding:5px 10px;border-radius:4px;text-decoration:none;font-size:12px;margin-right:6px;";
+            actionTd.appendChild(downloadBtn);
+
+            const delBtn = document.createElement("button");
+            delBtn.className = "btn-delete";
+            delBtn.textContent = "🗑 Delete";
+
+            delBtn.onclick = () => {
+                deleteDocument(d.id);
+            };
+
+            actionTd.appendChild(delBtn);
+            tr.appendChild(actionTd);
+
+            tbody.appendChild(tr);
         });
     }
 
-    renderTable(filtered);
-}
+    function applyFilters() {
+        const keyword = (document.getElementById("docSearch")?.value || "").toLowerCase();
 
-function loadDocuments() {
-    fetch("/api/documents")
-        .then(r => { if (!r.ok) { showError("Failed to load documents."); return []; } return r.json(); })
-        .then(data => { if (data) { allDocuments = data; applyFilters(); } })
-        .catch(() => showError("Could not connect to server. Please refresh."));
-}
+        let filtered = allDocuments;
 
-// FIX: sends Accept: application/json header so GlobalExceptionHandler
-// always returns JSON instead of the HTML error page, even for multipart uploads.
-function uploadFetch(formData) {
-    return fetch("/api/documents", {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: formData
-    }).then(r => {
-        const contentType = r.headers.get("Content-Type") || "";
-        if (!r.ok) {
-            // If server returned HTML despite our Accept header, give a plain message
-            if (contentType.includes("text/html")) {
-                throw new Error("Server error (500). Please check server logs.");
-            }
-            return r.json().then(j => {
-                throw new Error(j.error || j.message || "Failed to upload file.");
-            });
+        if (activeCategory !== "all") {
+            filtered = filtered.filter(d => d.category === activeCategory);
         }
-        // Success — parse JSON if that's what came back, otherwise just return ok
-        if (contentType.includes("application/json")) {
-            return r.json();
+
+        if (keyword) {
+            filtered = filtered.filter(d =>
+                (d.fileName || "").toLowerCase().includes(keyword) ||
+                (d.fileType || "").toLowerCase().includes(keyword) ||
+                (d.description || "").toLowerCase().includes(keyword) ||
+                (d.client?.fullName || "").toLowerCase().includes(keyword)
+            );
         }
-        return {};
-    });
-}
 
-document.getElementById("uploadForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    clearErrors();
-
-    const category = document.getElementById("docCategory").value;
-    const clientId = document.getElementById("docClientId").value;
-    const fileInput = document.getElementById("docFile");
-
-    if (!fileInput.files || fileInput.files.length === 0) {
-        showError("Please select a file to upload.");
-        fileInput.classList.add("error-field");
-        fileInput.focus();
-        return;
+        renderTable(filtered);
     }
-    fileInput.classList.remove("error-field");
 
-    if (category !== "Staff Resource" && !clientId) {
-        showError("Please select a client for this document type.");
-        document.getElementById("docClientId").classList.add("error-field");
-        return;
+    function loadDocuments() {
+        fetch("/api/documents")
+            .then(r => r.json())
+            .then(data => {
+                allDocuments = data;
+                applyFilters();
+            })
+            .catch(() => showError("Failed to load documents"));
     }
-    document.getElementById("docClientId").classList.remove("error-field");
 
-    const submitBtn = e.target.querySelector("button[type='submit']");
-    submitBtn.disabled = true;
-    submitBtn.textContent = "⏳ Uploading...";
-
-    const formData = new FormData();
-    formData.append("file",        fileInput.files[0]);
-    formData.append("category",    category);
-    formData.append("fileType",    document.getElementById("docFileType").value);
-    formData.append("description", document.getElementById("docDescription").value.trim());
-    if (clientId) formData.append("clientId", clientId);
-
-    uploadFetch(formData)
-        .then(() => {
-            loadDocuments();
-            resetForm();
-            showSuccess("Document uploaded successfully!");
-        })
-        .catch(err => {
-            showError(err.message || "Failed to upload file. Please try again.");
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "📤 Save Document";
+    function deleteDocument(id) {
+        showConfirm("Are you sure you want to delete this document?", () => {
+            fetch(`/api/documents/${id}`, { method: "DELETE" })
+                .then(r => {
+                    if (!r.ok) throw new Error();
+                    showSuccess("Document deleted!");
+                    loadDocuments();
+                })
+                .catch(() => showError("Failed to delete document"));
         });
-});
+    }
 
-function resetForm() {
-    document.getElementById("uploadForm").reset();
+    // Expose functions globally (important for HTML onclick/tab usage)
+    window.filterTab = function (category, tabEl) {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tabEl.classList.add("active");
+        activeCategory = category;
+        applyFilters();
+    };
+
+    window.searchDocuments = applyFilters;
+
+    // Events
+    const categoryEl = document.getElementById("docCategory");
+    if (categoryEl) {
+        categoryEl.addEventListener("change", handleCategoryChange);
+    }
+
+    const form = document.getElementById("uploadForm");
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+        });
+    }
+
+    // Init
     handleCategoryChange();
-}
-
-function deleteDocument(id) {
-    showConfirm("Are you sure you want to delete this document?", () => {
-        fetch(`/api/documents/${id}`, { method: "DELETE" })
-            .then(r => { if (!r.ok) throw new Error(); loadDocuments(); showSuccess("Document deleted!"); })
-            .catch(() => showError("Failed to delete document."));
-    });
-}
-
-// Init
-handleCategoryChange();
-loadDocuments();
+    loadDocuments();
+});

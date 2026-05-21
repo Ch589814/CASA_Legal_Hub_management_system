@@ -31,7 +31,6 @@ function showConfirm(message, onConfirm) {
     };
 }
 
-// Show/hide client field based on category
 function handleCategoryChange() {
     const category = document.getElementById("docCategory").value;
     const clientSection = document.getElementById("clientSection");
@@ -100,7 +99,6 @@ function renderTable(data) {
 
         const actionTd = document.createElement("td");
 
-        // Only show View for files browser can display
         const viewable = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.txt'];
         const ext = (d.fileName || '').toLowerCase().substring((d.fileName || '').lastIndexOf('.'));
         const canView = viewable.includes(ext);
@@ -146,12 +144,10 @@ function applyFilters() {
     const keyword = (document.getElementById("docSearch").value || "").toLowerCase().trim();
     let filtered = allDocuments;
 
-    // Apply category filter
     if (activeCategory !== "all") {
         filtered = filtered.filter(d => d.category === activeCategory);
     }
 
-    // Apply keyword search across fileName, fileType, description, client name
     if (keyword) {
         filtered = filtered.filter(d => {
             const name     = (d.fileName    || "").toLowerCase();
@@ -170,18 +166,35 @@ function applyFilters() {
 
 function loadDocuments() {
     fetch("/api/documents")
-        .then(r => {
-            if (!r.ok) { showError("Failed to load documents."); return []; }
-            return r.json();
-        })
-        .then(data => {
-            if (data) {
-                allDocuments = data;
-                applyFilters();
-            }
-        })
-        // FIX: was missing — network errors on load now show a message
+        .then(r => { if (!r.ok) { showError("Failed to load documents."); return []; } return r.json(); })
+        .then(data => { if (data) { allDocuments = data; applyFilters(); } })
         .catch(() => showError("Could not connect to server. Please refresh."));
+}
+
+// FIX: sends Accept: application/json header so GlobalExceptionHandler
+// always returns JSON instead of the HTML error page, even for multipart uploads.
+function uploadFetch(formData) {
+    return fetch("/api/documents", {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: formData
+    }).then(r => {
+        const contentType = r.headers.get("Content-Type") || "";
+        if (!r.ok) {
+            // If server returned HTML despite our Accept header, give a plain message
+            if (contentType.includes("text/html")) {
+                throw new Error("Server error (500). Please check server logs.");
+            }
+            return r.json().then(j => {
+                throw new Error(j.error || j.message || "Failed to upload file.");
+            });
+        }
+        // Success — parse JSON if that's what came back, otherwise just return ok
+        if (contentType.includes("application/json")) {
+            return r.json();
+        }
+        return {};
+    });
 }
 
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
@@ -207,7 +220,6 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     }
     document.getElementById("docClientId").classList.remove("error-field");
 
-    // Disable button to prevent double-submit
     const submitBtn = e.target.querySelector("button[type='submit']");
     submitBtn.disabled = true;
     submitBtn.textContent = "⏳ Uploading...";
@@ -219,25 +231,12 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     formData.append("description", document.getElementById("docDescription").value.trim());
     if (clientId) formData.append("clientId", clientId);
 
-    fetch("/api/documents", {
-        method: "POST",
-        body: formData
-    })
-        .then(r => {
-            if (!r.ok) {
-                // Try to get a descriptive error from the server body
-                return r.text().then(text => {
-                    throw new Error(text || "Server returned an error.");
-                });
-            }
-            return r.json();
-        })
+    uploadFetch(formData)
         .then(() => {
             loadDocuments();
             resetForm();
             showSuccess("Document uploaded successfully!");
         })
-        // FIX: was .catch(() => {}) — errors were silently swallowed
         .catch(err => {
             showError(err.message || "Failed to upload file. Please try again.");
         })
@@ -255,11 +254,7 @@ function resetForm() {
 function deleteDocument(id) {
     showConfirm("Are you sure you want to delete this document?", () => {
         fetch(`/api/documents/${id}`, { method: "DELETE" })
-            .then(r => {
-                if (!r.ok) throw new Error();
-                loadDocuments();
-                showSuccess("Document deleted!");
-            })
+            .then(r => { if (!r.ok) throw new Error(); loadDocuments(); showSuccess("Document deleted!"); })
             .catch(() => showError("Failed to delete document."));
     });
 }

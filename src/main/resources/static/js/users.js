@@ -104,7 +104,8 @@ function renderTable(data) {
 function loadUsers() {
     fetch("/api/users")
         .then(r => { if (!r.ok) { showError("Failed to load users."); return []; } return r.json(); })
-        .then(data => { if (data) renderTable(data); });
+        .then(data => { if (data) renderTable(data); })
+        .catch(() => showError("Could not connect to server. Please refresh."));
 }
 
 document.getElementById("userForm").addEventListener("submit", function(e) {
@@ -119,6 +120,11 @@ document.getElementById("userForm").addEventListener("submit", function(e) {
     };
     const url    = editingId ? `/api/users/${editingId}` : "/api/users";
     const method = editingId ? "PUT" : "POST";
+
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Saving...";
+
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(user) })
         .then(r => {
             if (!r.ok) return r.json().then(body => {
@@ -141,7 +147,11 @@ document.getElementById("userForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "User updated!" : "User saved!");
             editingId = null;
         })
-        .catch(err => { if (err.message !== "validation") showError("Something went wrong."); });
+        .catch(err => { if (err.message !== "validation") showError("Something went wrong."); })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "💾 Save User";
+        });
 });
 
 function editUser(id, fullName, email, role, status) {
@@ -162,10 +172,13 @@ function cancelEdit() {
     clearErrors();
 }
 
+// FIX: was deleting immediately with no confirmation
 function deleteUser(id) {
-    fetch(`/api/users/${id}`, { method: "DELETE" })
-        .then(() => { loadUsers(); showSuccess("User deleted!"); })
-        .catch(() => showError("Failed to delete user."));
+    showConfirm("Are you sure you want to delete this user?", () => {
+        fetch(`/api/users/${id}`, { method: "DELETE" })
+            .then(r => { if (!r.ok) throw new Error(); loadUsers(); showSuccess("User deleted!"); })
+            .catch(() => showError("Failed to delete user."));
+    });
 }
 
 loadUsers();

@@ -108,13 +108,15 @@ function renderTable(data) {
 function loadCases() {
     fetch("/api/cases")
         .then(r => { if (!r.ok) { showError("Failed to load cases."); return []; } return r.json(); })
-        .then(data => { if (data) renderTable(data); });
+        .then(data => { if (data) renderTable(data); })
+        .catch(() => showError("Could not connect to server. Please refresh."));
 }
 
 document.getElementById("caseForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const clientId = document.getElementById("clientId").value;
     if (!clientId) { showError("Please select a client."); return; }
+
     const payload = {
         caseNumber:  document.getElementById("caseNumber").value,
         serviceType: document.getElementById("caseServiceType") ? document.getElementById("caseServiceType").value : "",
@@ -125,8 +127,14 @@ document.getElementById("caseForm").addEventListener("submit", function(e) {
         description: document.getElementById("caseDescription").value,
         client: { id: clientId }
     };
+
     const url    = editingId ? `/api/cases/${editingId}` : "/api/cases";
     const method = editingId ? "PUT" : "POST";
+
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Saving...";
+
     fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
         .then(r => { if (!r.ok) { showError("Failed to save case."); throw new Error(); } return r.json(); })
         .then(() => {
@@ -136,7 +144,12 @@ document.getElementById("caseForm").addEventListener("submit", function(e) {
             showSuccess(editingId ? "Case updated!" : "Case saved!");
             editingId = null;
         })
-        .catch(() => {});
+        // FIX: was .catch(() => {}) — errors were silently swallowed
+        .catch(() => showError("Something went wrong. Please try again."))
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "💾 Save Case";
+        });
 });
 
 function editCase(id, caseNumber, serviceType, caseType, status, priority, courtDate, description, clientId) {
@@ -159,10 +172,13 @@ function cancelEdit() {
     document.getElementById("formTitle").textContent = "Add New Case";
 }
 
+// FIX: was deleting immediately with no confirmation
 function deleteCase(id) {
-    fetch(`/api/cases/${id}`, { method: "DELETE" })
-        .then(() => { loadCases(); showSuccess("Case deleted!"); })
-        .catch(() => showError("Failed to delete case."));
+    showConfirm("Are you sure you want to delete this case?", () => {
+        fetch(`/api/cases/${id}`, { method: "DELETE" })
+            .then(r => { if (!r.ok) throw new Error(); loadCases(); showSuccess("Case deleted!"); })
+            .catch(() => showError("Failed to delete case."));
+    });
 }
 
 function searchCases() {
@@ -170,7 +186,8 @@ function searchCases() {
     if (!keyword) { loadCases(); return; }
     fetch(`/api/cases/search?keyword=${encodeURIComponent(keyword)}`)
         .then(r => r.ok ? r.json() : [])
-        .then(data => { if (data) renderTable(data); });
+        .then(data => { if (data) renderTable(data); })
+        .catch(() => showError("Search failed. Please try again."));
 }
 
 loadCases();

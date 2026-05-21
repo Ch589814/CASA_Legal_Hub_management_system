@@ -1,7 +1,10 @@
 package com.example.casa_legal_hub_management_system.controller;
 
 import com.example.casa_legal_hub_management_system.model.Client;
+import com.example.casa_legal_hub_management_system.repository.CaseRepository;
 import com.example.casa_legal_hub_management_system.repository.ClientRepository;
+import com.example.casa_legal_hub_management_system.repository.DocumentRepository;
+import com.example.casa_legal_hub_management_system.repository.FinanceRepository;
 import com.example.casa_legal_hub_management_system.service.ActivityLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -18,10 +21,20 @@ import java.util.stream.Collectors;
 public class ClientController {
 
     private final ClientRepository clientRepository;
+    private final CaseRepository caseRepository;
+    private final DocumentRepository documentRepository;
+    private final FinanceRepository financeRepository;
     private final ActivityLogService activityLogService;
 
-    public ClientController(ClientRepository clientRepository, ActivityLogService activityLogService) {
+    public ClientController(ClientRepository clientRepository,
+                            CaseRepository caseRepository,
+                            DocumentRepository documentRepository,
+                            FinanceRepository financeRepository,
+                            ActivityLogService activityLogService) {
         this.clientRepository = clientRepository;
+        this.caseRepository = caseRepository;
+        this.documentRepository = documentRepository;
+        this.financeRepository = financeRepository;
         this.activityLogService = activityLogService;
     }
 
@@ -39,7 +52,7 @@ public class ClientController {
 
     @PostMapping
     public ResponseEntity<?> createClient(@Valid @RequestBody Client client,
-                                           BindingResult result, HttpServletRequest request) {
+                                          BindingResult result, HttpServletRequest request) {
         if (result.hasErrors()) {
             List<String> errors = result.getFieldErrors().stream()
                     .map(e -> e.getField() + ": " + e.getDefaultMessage())
@@ -58,7 +71,7 @@ public class ClientController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateClient(@PathVariable Long id, @Valid @RequestBody Client client,
-                                           BindingResult result, HttpServletRequest request) {
+                                          BindingResult result, HttpServletRequest request) {
         if (result.hasErrors()) {
             List<String> errors = result.getFieldErrors().stream()
                     .map(e -> e.getField() + ": " + e.getDefaultMessage())
@@ -79,11 +92,17 @@ public class ClientController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClient(@PathVariable Long id, HttpServletRequest request) {
-        clientRepository.findById(id).ifPresent(c ->
-                activityLogService.log("DELETE_CLIENT", "CLIENTS", "Deleted client: " + c.getFullName(), request));
-        clientRepository.deleteById(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteClient(@PathVariable Long id, HttpServletRequest request) {
+        return clientRepository.findById(id).map(client -> {
+            // Delete child records first to avoid FK constraint violations.
+            // Order: documents and finances before cases, then client last.
+            documentRepository.deleteAll(documentRepository.findByClientId(id));
+            financeRepository.deleteAll(financeRepository.findByClientId(id));
+            caseRepository.deleteAll(caseRepository.findByClientId(id));
+            activityLogService.log("DELETE_CLIENT", "CLIENTS", "Deleted client: " + client.getFullName(), request);
+            clientRepository.deleteById(id);
+            return ResponseEntity.ok().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/search")

@@ -28,7 +28,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .two-col > div { width: 100%; }
-input, select, textarea { width: 100%; } /* Overriding the 55% from before for better responsiveness */
+input, select, textarea { width: 100%; }
 
 .error-field { border-color: #e74c3c !important; background-color: #fff5f5; }
 .field-error { color: #e74c3c; font-size: 12px; margin-top: 2px; margin-bottom: 10px; display: block; font-weight: 500; }
@@ -150,3 +150,22 @@ tr:hover td { background: #f7fafc; }
 .welcome-banner h1 { margin: 0; font-size: 28px; font-weight: 700; }
 .welcome-banner p { margin: 8px 0 0; font-size: 16px; opacity: 0.9; }
 .role-badge { background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 25px; font-size: 14px; font-weight: 700; backdrop-filter: blur(5px); }
+
+/* ============================= */
+/* NEW: Delete button as text link */
+/* ============================= */
+.btn-delete-link {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    padding: 0;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-delete-link:hover {
+    color: #c0392b;
+    text-decoration: underline;
+}

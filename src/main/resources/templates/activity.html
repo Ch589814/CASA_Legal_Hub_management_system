@@ -190,11 +190,21 @@
                 </option>
             </select>
 
-            <!-- CLEAR BUTTON -->
+            <!-- CLEAR FILTERS BUTTON -->
             <button type="button"
                     class="btn-cancel"
-                    onclick="clearFilters()">
-                ✖ Clear
+                    onclick="clearFilters()"
+                    title="Clear filter inputs">
+                ✖ Clear Filters
+            </button>
+
+            <!-- CLEAR LOGS BUTTON -->
+            <button type="button"
+                    class="btn-cancel"
+                    style="background: #9b59b6;"
+                    onclick="clearLogs()"
+                    title="Delete logs for selected module or all logs">
+                🗑️ Clear Logs
             </button>
 
         </div>
@@ -285,6 +295,32 @@ function clearFilters() {
     document.getElementById("filterStaff").value = "";
 
     filterLogs();
+}
+
+function clearLogs() {
+    const module = document.getElementById("filterModule").value;
+    
+    if (!module) {
+        if (!confirm("Are you sure you want to delete ALL activity logs? This action cannot be undone.")) {
+            return;
+        }
+    } else {
+        if (!confirm("Are you sure you want to delete all logs for module '" + module + "'?")) {
+            return;
+        }
+    }
+    
+    const url = module ? "/api/activity/module/" + encodeURIComponent(module) : "/api/activity/all";
+    
+    fetch(url, { method: "DELETE" })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert("Failed to clear logs. Please try again.");
+            }
+        })
+        .catch(() => alert("An error occurred while clearing logs."));
 }
 </script>
 

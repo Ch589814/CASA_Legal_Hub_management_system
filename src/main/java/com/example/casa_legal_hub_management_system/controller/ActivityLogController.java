@@ -25,4 +25,14 @@ public class ActivityLogController {
     public List<ActivityLog> getLogsByStaff(@PathVariable String email) {
         return activityLogRepository.findByStaffEmailOrderByTimestampDesc(email);
     }
+
+    @DeleteMapping("/module/{module}")
+    public void deleteLogsByModule(@PathVariable String module) {
+        activityLogRepository.deleteByModule(module);
+    }
+
+    @DeleteMapping("/all")
+    public void deleteAllLogs() {
+        activityLogRepository.deleteAll();
+    }
 }

@@ -7,4 +7,6 @@ import java.util.List;
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
     List<ActivityLog> findByStaffEmailOrderByTimestampDesc(String staffEmail);
     List<ActivityLog> findAllByOrderByTimestampDesc();
+    void deleteByModule(String module);
+    void deleteAll();
 }

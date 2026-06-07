@@ -185,8 +185,59 @@ document.addEventListener("DOMContentLoaded", function () {
     if (form) {
         form.addEventListener("submit", function (e) {
             e.preventDefault();
+
+            const fileInput = document.getElementById("docFile");
+            const category = document.getElementById("docCategory").value;
+            const clientId = document.getElementById("docClientId").value || null;
+            const fileType = document.getElementById("docFileType").value;
+            const description = document.getElementById("docDescription").value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showError("Please select a file to upload.");
+                return;
+            }
+
+            const submitBtn = e.target.querySelector("button[type='submit']");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "⏳ Saving...";
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            formData.append("category", category);
+            if (clientId) formData.append("clientId", clientId);
+            formData.append("fileType", fileType);
+            formData.append("description", description);
+
+            fetch("/api/documents", {
+                method: "POST",
+                body: formData
+            })
+                .then(r => {
+                    if (!r.ok) throw new Error();
+                    return r.json();
+                })
+                .then(() => {
+                    loadDocuments();
+                    form.reset();
+                    handleCategoryChange();
+                    showSuccess("Document saved successfully!");
+                })
+                .catch(() => showError("Failed to save document."))
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "📤 Save Document";
+                });
         });
     }
+
+    // Reset form
+    window.resetForm = function() {
+        const form = document.getElementById("uploadForm");
+        if (form) {
+            form.reset();
+            handleCategoryChange();
+        }
+    };
 
     // Init
     handleCategoryChange();

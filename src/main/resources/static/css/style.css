@@ -1,10 +1,10 @@
 m* { box-sizing: border-box; transition: all 0.2s ease-in-out; }
-body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; color: #333; line-height: 1.6; }
-header { background: #1a252f; color: white; padding: 12px 30px; font-size: 22px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-nav { background: #2c3e50; display: flex; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-nav a { color: #bdc3c7; text-decoration: none; padding: 14px 22px; display: block; font-size: 14px; font-weight: 500; }
-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
-nav a.active { color: white; background: #3498db; border-bottom: 3px solid #2980b9; }
+body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f5f7fa; margin: 0; padding: 0; color: #2d3748; line-height: 1.6; }
+header { background: #1a365d; color: white; padding: 12px 30px; font-size: 22px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+nav { background: #2a4365; display: flex; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+nav a { color: #e2e8f0; text-decoration: none; padding: 14px 22px; display: block; font-size: 14px; font-weight: 500; }
+nav a:hover { color: white; background: rgba(255,255,255,0.15); }
+nav a.active { color: white; background: #2b6cb0; border-bottom: 3px solid #2c5282; }
 
 .container { width: 92%; max-width: 1400px; margin: 30px auto; }
 .card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e1e4e8; }
@@ -35,7 +35,7 @@ input, select, textarea { width: 100%; }
 .hint { font-size: 12px; color: #718096; display: block; margin-bottom: 10px; }
 
 button { 
-    background: #3498db; 
+    background: #2b6cb0; 
     color: white; 
     padding: 10px 20px; 
     border: none; 
@@ -49,17 +49,17 @@ button {
     gap: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-button:hover { background: #2980b9; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+button:hover { background: #2a4a7a; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
 button:active { transform: translateY(0); }
 
-.btn-cancel { background: #95a5a6; }
-.btn-cancel:hover { background: #7f8c8d; }
-.btn-delete { background: #e74c3c; }
-.btn-delete:hover { background: #c0392b; }
-.btn-view { background: #2ecc71; }
-.btn-view:hover { background: #27ae60; }
-.btn-warning { background: #f39c12; }
-.btn-warning:hover { background: #d68910; }
+.btn-cancel { background: #4a5568; }
+.btn-cancel:hover { background: #2d3748; }
+.btn-delete { background: #c53030; }
+.btn-delete:hover { background: #9b2c2c; }
+.btn-view { background: #38a169; }
+.btn-view:hover { background: #2f855a; }
+.btn-warning { background: #dd6b20; }
+.btn-warning:hover { background: #c05621; }
 
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; margin-top: 10px; }
 th { background: #f8f9fa; color: #4a5568; padding: 12px 15px; text-align: left; font-weight: 600; border-bottom: 2px solid #e1e4e8; }
@@ -68,13 +68,13 @@ tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f7fafc; }
 
 .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.badge-open { background: #def7ec; color: #03543f; }
-.badge-closed { background: #f3f4f6; color: #374151; }
-.badge-pending { background: #fef3c7; color: #92400e; }
-.badge-paid { background: #def7ec; color: #03543f; }
-.badge-overdue { background: #fde2e1; color: #9b1c1c; }
-.badge-active { background: #def7ec; color: #03543f; }
-.badge-inactive { background: #f3f4f6; color: #374151; }
+.badge-open { background: #c6f6d5; color: #22543d; }
+.badge-closed { background: #e2e8f0; color: #2d3748; }
+.badge-pending { background: #fefcbf; color: #744210; }
+.badge-paid { background: #c6f6d5; color: #22543d; }
+.badge-overdue { background: #fed7d7; color: #742a2a; }
+.badge-active { background: #c6f6d5; color: #22543d; }
+.badge-inactive { background: #e2e8f0; color: #2d3748; }
 
 .search-input { 
     width: 350px; 

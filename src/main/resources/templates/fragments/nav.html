@@ -4,7 +4,7 @@
 <body>
 <div th:fragment="navbar">
     <header style="display:flex; align-items:center; justify-content:space-between; padding: 12px 30px; background:#2c3e50; color:white;">
-        <span style="font-size:20px; font-weight:bold;">⚖️ CASA Legal Hub</span>
+        <span style="font-size:20px; font-weight:bold;"><img th:src="@{/images/logo.png}" alt="CASA Legal Hub Logo" style="height:20px; width:auto; vertical-align:middle; margin-right:6px;"> CASA Legal Hub</span>
         <span style="font-size:13px; color:#bdc3c7;">
             👤 <a th:href="@{/profile}" style="color:#bdc3c7; text-decoration:none;" sec:authentication="name">User</a>
             &nbsp;|&nbsp;
